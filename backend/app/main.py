@@ -1,7 +1,12 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from slowapi import _rate_limit_exceeded_handler
+from slowapi.errors import RateLimitExceeded
+
+import app.db.base  # noqa: F401 — registers all ORM models before mapper config runs
 
 from app.core.config import settings
+from app.core.limiter import limiter
 
 app = FastAPI(
     title="FitTrack API",
@@ -10,6 +15,13 @@ app = FastAPI(
     redoc_url="/redoc" if settings.ENVIRONMENT != "production" else None,
 )
 
+# ── Rate limiting ─────────────────────────────────────────────────────────────
+# Global default: 200 req/min per IP (set in limiter.py).
+# Auth endpoints override to 10/minute via @limiter.limit("10/minute").
+app.state.limiter = limiter
+app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
+
+# ── CORS ──────────────────────────────────────────────────────────────────────
 app.add_middleware(
     CORSMiddleware,
     allow_origins=settings.BACKEND_CORS_ORIGINS,
@@ -18,9 +30,9 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Routers registered here as each module is implemented:
-# from app.api.v1.router import api_router
-# app.include_router(api_router, prefix="/api/v1")
+# ── Routers ───────────────────────────────────────────────────────────────────
+from app.api.v1.router import api_router  # noqa: E402
+app.include_router(api_router, prefix="/api/v1")
 
 
 @app.get("/health", tags=["health"])

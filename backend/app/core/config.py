@@ -22,6 +22,16 @@ class Settings(BaseSettings):
     # App
     ENVIRONMENT: Literal["development", "production", "test"] = "development"
 
+    @field_validator("SECRET_KEY")
+    @classmethod
+    def secret_key_minimum_length(cls, v: str) -> str:
+        if len(v) < 32:
+            raise ValueError(
+                "SECRET_KEY must be at least 32 characters. "
+                "Generate one with: python -c \"import secrets; print(secrets.token_hex(32))\""
+            )
+        return v
+
     @field_validator("BACKEND_CORS_ORIGINS", mode="before")
     @classmethod
     def parse_cors_origins(cls, v: str | List[str]) -> List[str]:
