@@ -76,6 +76,7 @@ Profile
   GET    /api/v1/profile/me
   PUT    /api/v1/profile/me
   PUT    /api/v1/profile/onboarding
+  GET    /api/v1/users
   GET    /api/v1/users/{username}
   GET    /api/v1/users/{username}/followers
   GET    /api/v1/users/{username}/following
@@ -333,6 +334,43 @@ Follows
 ```json
 { "message": "Onboarding complete", "onboarding_complete": true }
 ```
+
+---
+
+### `GET /users`
+
+Discover and search users. Powers the `/community/discover` page (US-036).
+
+**Auth required:** Yes
+
+**Query Params**
+| Param | Type | Default | Description |
+|---|---|---|---|
+| q | string | null | Partial match on username or full_name (case-insensitive) |
+| skip | int | 0 | |
+| limit | int | 20 | Max 50 |
+
+**Response `200`**
+```json
+{
+  "items": [
+    {
+      "username": "marcus_lifts",
+      "full_name": "Marcus Lee",
+      "avatar_color": "#10B981",
+      "bio": "Powerlifter.",
+      "follower_count": 47,
+      "is_following": false
+    }
+  ],
+  "total": 12,
+  "skip": 0,
+  "limit": 20
+}
+```
+
+> Results exclude the requesting user. Only public profiles are returned.
+> `is_following` reflects the requesting user's current follow state.
 
 ---
 
