@@ -1,0 +1,29 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.backends.legacy:build"
+
+[project]
+name = "fittrack-backend"
+version = "1.0.0"
+requires-python = ">=3.12"
+
+[tool.black]
+line-length = 88
+target-version = ["py312"]
+
+[tool.isort]
+profile = "black"
+known_first_party = ["app"]
+
+[tool.pytest.ini_options]
+testpaths = ["app/tests"]
+asyncio_mode = "auto"
+env = [
+    "DATABASE_URL=postgresql://fittrack:fittrack@localhost:5432/fittrack_test",
+    "SECRET_KEY=test-secret-key-minimum-32-chars-long",
+    "ENVIRONMENT=test",
+]
+
+[tool.coverage.run]
+source = ["app"]
+omit = ["app/tests/*", "app/db/seeds.py"]
