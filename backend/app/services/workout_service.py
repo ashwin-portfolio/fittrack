@@ -53,7 +53,7 @@ def _build_response(session: WorkoutSession) -> WorkoutResponse:
 
 
 def _check_ownership(session: WorkoutSession | None, user_id: uuid.UUID) -> WorkoutSession:
-    if session is None or session.deleted_at is not None:
+    if session is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Workout not found")
     if session.user_id != user_id:
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Access denied")
@@ -144,13 +144,69 @@ class WorkoutService:
         _check_ownership(session, current_user.id)
         return _build_response(session)  # type: ignore[arg-type]
 
+    def update_workout(
+        self, db: Session, current_user: User, workout_id: uuid.UUID, body: WorkoutCreateRequest
+    ) -> WorkoutResponse:
+        session = workout_repo.get_by_id(db, workout_id)
+        _check_ownership(session, current_user.id)
+
+        # Validate exercise access
+        for item in body.exercises:
+            ex = exercise_repo.get_by_id(db, item.exercise_id)
+            if ex is None or (not ex.is_system and ex.created_by_user_id != current_user.id):
+                raise HTTPException(
+                    status_code=status.HTTP_400_BAD_REQUEST,
+                    detail=f"Exercise {item.exercise_id} not found or not accessible",
+                )
+
+        old_shared = session.is_shared  # type: ignore[union-attr]
+
+        session.session_date = body.session_date  # type: ignore[union-attr]
+        session.name = body.name  # type: ignore[union-attr]
+        session.notes = body.notes  # type: ignore[union-attr]
+        session.is_shared = body.is_shared  # type: ignore[union-attr]
+
+        # Replace all exercises and sets
+        workout_repo.clear_exercises(db, session)  # type: ignore[arg-type]
+        for idx, item in enumerate(body.exercises):
+            we = workout_repo.add_exercise(
+                db,
+                session_id=session.id,  # type: ignore[union-attr]
+                exercise_id=item.exercise_id,
+                order_index=idx,
+            )
+            for s in item.sets:
+                workout_repo.add_set(
+                    db,
+                    workout_exercise_id=we.id,
+                    set_number=s.set_number,
+                    reps=s.reps,
+                    weight_kg=s.weight_kg,
+                )
+
+        db.flush()
+        db.refresh(session, ["workout_exercises"])
+        for we in session.workout_exercises:  # type: ignore[union-attr]
+            db.refresh(we, ["exercise", "sets"])
+
+        # Sync feed item with sharing state
+        if body.is_shared and not old_shared:
+            feed_repo.create_feed_item(
+                db, user_id=current_user.id, activity_type="workout",
+                workout_session_id=session.id,  # type: ignore[union-attr]
+            )
+        elif not body.is_shared and old_shared:
+            feed_repo.soft_delete_by_workout(db, session.id)  # type: ignore[union-attr]
+
+        return _build_response(session)  # type: ignore[arg-type]
+
     def delete_workout(
         self, db: Session, current_user: User, workout_id: uuid.UUID
     ) -> None:
         session = workout_repo.get_by_id(db, workout_id)
         _check_ownership(session, current_user.id)
         feed_repo.soft_delete_by_workout(db, session.id)  # type: ignore[union-attr]
-        workout_repo.soft_delete(db, session)  # type: ignore[arg-type]
+        workout_repo.hard_delete(db, session)  # type: ignore[arg-type]
 
 
 workout_service = WorkoutService()

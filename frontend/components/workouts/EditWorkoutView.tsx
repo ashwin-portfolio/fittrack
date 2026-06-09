@@ -1,0 +1,229 @@
+'use client'
+
+import { useEffect, useState } from 'react'
+import { useRouter } from 'next/navigation'
+import { FormProvider, useFieldArray, useForm } from 'react-hook-form'
+import { zodResolver } from '@hookform/resolvers/zod'
+import { ArrowLeft, Loader2, Plus } from 'lucide-react'
+import Link from 'next/link'
+import { toast } from 'sonner'
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import { Textarea } from '@/components/ui/textarea'
+import { Skeleton } from '@/components/ui/skeleton'
+import { ExercisePicker } from '@/components/workouts/ExercisePicker'
+import { ExerciseBlock } from '@/components/workouts/ExerciseBlock'
+import { workoutFormSchema, type WorkoutFormValues } from '@/lib/validators/workout'
+import { useWorkout, useUpdateWorkout } from '@/hooks/useWorkouts'
+import type { Exercise } from '@/types/workout'
+
+interface EditWorkoutViewProps {
+  workoutId: string
+}
+
+export function EditWorkoutView({ workoutId }: EditWorkoutViewProps) {
+  const router = useRouter()
+  const { data: workout, isLoading, isError } = useWorkout(workoutId)
+  const updateWorkout = useUpdateWorkout(workoutId)
+  const [pickerOpen, setPickerOpen] = useState(false)
+  const [ready, setReady] = useState(false)
+
+  const form = useForm<WorkoutFormValues>({
+    resolver: zodResolver(workoutFormSchema),
+    defaultValues: {
+      session_date: '',
+      name: '',
+      notes: '',
+      exercises: [],
+    },
+  })
+
+  const { fields, append, remove } = useFieldArray({
+    control: form.control,
+    name: 'exercises',
+  })
+
+  // Pre-populate once the workout data loads
+  useEffect(() => {
+    if (!workout) return
+    form.reset({
+      session_date: workout.session_date,
+      name: workout.name ?? '',
+      notes: workout.notes ?? '',
+      exercises: workout.exercises.map((ex) => ({
+        exercise_id: ex.exercise_id,
+        exercise_name: ex.exercise_name,
+        muscle_group: ex.muscle_group,
+        sets: ex.sets.map((s) => ({
+          set_number: s.set_number,
+          reps: s.reps,
+          weight_kg: s.weight_kg,
+        })),
+      })),
+    })
+    setReady(true)
+  }, [workout, form])
+
+  useEffect(() => {
+    if (isError) router.replace('/workouts')
+  }, [isError, router])
+
+  function addExercise(exercise: Exercise) {
+    append({
+      exercise_id: exercise.id,
+      exercise_name: exercise.name,
+      muscle_group: exercise.muscle_group,
+      sets: [{ set_number: 1, reps: 10, weight_kg: 0 }],
+    })
+  }
+
+  const onSubmit = form.handleSubmit((values) => {
+    updateWorkout.mutate(
+      {
+        session_date: values.session_date,
+        name: values.name?.trim() || null,
+        notes: values.notes?.trim() || null,
+        exercises: values.exercises.map((ex) => ({
+          exercise_id: ex.exercise_id,
+          sets: ex.sets.map((s, i) => ({
+            set_number: i + 1,
+            reps: s.reps,
+            weight_kg: s.weight_kg,
+          })),
+        })),
+      },
+      {
+        onSuccess: () => {
+          toast.success('Workout updated!')
+          router.push(`/workouts/${workoutId}`)
+        },
+      },
+    )
+  })
+
+  if (isLoading || !ready) {
+    return (
+      <div className="space-y-5">
+        <div className="flex items-center gap-2">
+          <Skeleton className="h-9 w-9 rounded-md" />
+          <Skeleton className="h-7 w-36" />
+        </div>
+        <div className="grid gap-3 sm:grid-cols-2">
+          <Skeleton className="h-10 w-full" />
+          <Skeleton className="h-10 w-full" />
+        </div>
+        <Skeleton className="h-32 w-full rounded-lg" />
+        <Skeleton className="h-20 w-full" />
+      </div>
+    )
+  }
+
+  const exercisesError = form.formState.errors.exercises
+
+  return (
+    <FormProvider {...form}>
+      <div className="space-y-5 pb-24 md:pb-8">
+        {/* Header */}
+        <div className="flex items-center gap-2">
+          <Link href={`/workouts/${workoutId}`}>
+            <Button variant="ghost" size="icon" className="shrink-0">
+              <ArrowLeft className="h-4 w-4" />
+            </Button>
+          </Link>
+          <h1 className="text-xl font-bold">Edit Workout</h1>
+        </div>
+
+        {/* Date + Name */}
+        <div className="grid gap-3 sm:grid-cols-2">
+          <div className="space-y-1.5">
+            <label className="text-sm font-medium" htmlFor="session_date">
+              Date
+            </label>
+            <Input
+              id="session_date"
+              type="date"
+              {...form.register('session_date')}
+              className={form.formState.errors.session_date ? 'border-destructive' : ''}
+            />
+          </div>
+          <div className="space-y-1.5">
+            <label className="text-sm font-medium" htmlFor="workout_name">
+              Name <span className="text-muted-foreground font-normal">(optional)</span>
+            </label>
+            <Input
+              id="workout_name"
+              placeholder="e.g. Chest day"
+              {...form.register('name')}
+            />
+          </div>
+        </div>
+
+        {/* Exercises */}
+        <div className="space-y-3">
+          <div className="flex items-center justify-between">
+            <h2 className="text-sm font-semibold uppercase tracking-wide text-muted-foreground">
+              Exercises
+            </h2>
+            {exercisesError && typeof exercisesError === 'object' && 'message' in exercisesError && (
+              <p className="text-xs text-destructive">{String(exercisesError.message)}</p>
+            )}
+          </div>
+
+          {fields.map((field, index) => (
+            <ExerciseBlock
+              key={field.id}
+              exerciseIndex={index}
+              exerciseName={field.exercise_name}
+              muscleGroup={field.muscle_group as Parameters<typeof ExerciseBlock>[0]['muscleGroup']}
+              onRemove={() => remove(index)}
+            />
+          ))}
+
+          <Button
+            type="button"
+            variant="outline"
+            className="w-full border-dashed"
+            onClick={() => setPickerOpen(true)}
+          >
+            <Plus className="h-4 w-4 mr-1.5" />
+            Add Exercise
+          </Button>
+        </div>
+
+        {/* Notes */}
+        <div className="space-y-1.5">
+          <label className="text-sm font-medium" htmlFor="notes">
+            Notes <span className="text-muted-foreground font-normal">(optional)</span>
+          </label>
+          <Textarea
+            id="notes"
+            placeholder="How did it feel?"
+            rows={3}
+            {...form.register('notes')}
+          />
+        </div>
+
+        {/* Submit */}
+        <div className="fixed bottom-0 left-0 right-0 border-t bg-background p-4 md:static md:border-0 md:bg-transparent md:p-0">
+          <Button
+            className="w-full md:w-auto"
+            size="lg"
+            onClick={onSubmit}
+            disabled={updateWorkout.isPending}
+          >
+            {updateWorkout.isPending && (
+              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+            )}
+            Update Workout
+          </Button>
+        </div>
+      </div>
+
+      <ExercisePicker
+        open={pickerOpen}
+        onOpenChange={setPickerOpen}
+        onSelect={addExercise}
+      />
+    </FormProvider>
+  )
+}

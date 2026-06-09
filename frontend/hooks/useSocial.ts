@@ -22,6 +22,20 @@ export function useAddComment(feedItemId: string) {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.social.comments(feedItemId) })
       queryClient.invalidateQueries({ queryKey: queryKeys.feed.global() })
+      queryClient.invalidateQueries({ queryKey: queryKeys.feed.following() })
+    },
+    onError: (error) => toast.error(getApiErrorMessage(error)),
+  })
+}
+
+export function useDeleteComment(feedItemId: string) {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: (commentId: string) => socialApi.deleteComment(commentId),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.social.comments(feedItemId) })
+      queryClient.invalidateQueries({ queryKey: queryKeys.feed.global() })
+      queryClient.invalidateQueries({ queryKey: queryKeys.feed.following() })
     },
     onError: (error) => toast.error(getApiErrorMessage(error)),
   })
@@ -30,7 +44,8 @@ export function useAddComment(feedItemId: string) {
 export function useToggleKudos() {
   const queryClient = useQueryClient()
   return useMutation({
-    mutationFn: (feedItemId: string) => socialApi.toggleKudos(feedItemId),
+    mutationFn: ({ feedItemId, hasKudos }: { feedItemId: string; hasKudos: boolean }) =>
+      hasKudos ? socialApi.removeKudos(feedItemId) : socialApi.giveKudos(feedItemId),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.feed.global() })
       queryClient.invalidateQueries({ queryKey: queryKeys.feed.following() })
@@ -44,10 +59,19 @@ export function useFollow(username: string) {
   return useMutation({
     mutationFn: (isFollowing: boolean) =>
       isFollowing ? socialApi.unfollow(username) : socialApi.follow(username),
-    onSuccess: () => {
+    onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: queryKeys.profile.public(username) })
       queryClient.invalidateQueries({ queryKey: queryKeys.social.suggestions() })
+      toast.success(data.is_following ? `Following @${username}` : `Unfollowed @${username}`)
     },
     onError: (error) => toast.error(getApiErrorMessage(error)),
+  })
+}
+
+export function useSearchUsers(q?: string) {
+  return useQuery({
+    queryKey: queryKeys.social.suggestions(q),
+    queryFn: () => socialApi.searchUsers({ q, limit: 20 }),
+    staleTime: 30_000,
   })
 }

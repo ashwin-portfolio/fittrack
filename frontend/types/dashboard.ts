@@ -1,33 +1,44 @@
-export interface DashboardSummary {
-  workouts_this_week: number
-  workouts_this_month: number
-  calories_today: number
-  current_weight_kg: number | null
-  weight_change_kg: number | null
-  active_goal: string | null
-  streak_days: number
+export type DashboardActivityType = 'workout' | 'meal' | 'weight'
+
+export interface DashboardActivity {
+  type: DashboardActivityType
+  label: string
+  occurred_at: string
 }
 
-export interface WeightChartPoint {
-  date: string
+export interface DashboardSummary {
+  current_weight_kg: number | null
+  target_weight_kg: number | null
+  weight_change_kg: number | null
+  workouts_this_week: number
+  calories_today: number
+  protein_today_g: number
+  recent_activities: DashboardActivity[]
+}
+
+export interface WeightDataPoint {
+  date: string       // YYYY-MM-DD
   weight_kg: number
 }
 
+export interface WeightChartData {
+  data: WeightDataPoint[]
+}
+
 export interface WorkoutFrequencyPoint {
-  week: string
+  week: string       // e.g. "Dec 23"
   count: number
 }
 
-export interface CalorieChartPoint {
-  date: string
+export interface WorkoutsChartData {
+  data: WorkoutFrequencyPoint[]
+}
+
+export interface CalorieDataPoint {
+  date: string       // YYYY-MM-DD
   calories: number
-  target: number | null
 }
 
-export interface DashboardCharts {
-  weight_trend: WeightChartPoint[]
-  workout_frequency: WorkoutFrequencyPoint[]
-  calorie_intake: CalorieChartPoint[]
+export interface CaloriesChartData {
+  data: CalorieDataPoint[]
 }
-
-export type ChartType = 'weight' | 'workouts' | 'calories'

@@ -39,6 +39,16 @@ def get_workout(
     return workout_service.get_workout(db, current_user, workout_id)
 
 
+@router.patch("/{workout_id}", response_model=WorkoutResponse)
+def update_workout(
+    workout_id: uuid.UUID,
+    body: WorkoutCreateRequest,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_active_user),
+):
+    return workout_service.update_workout(db, current_user, workout_id, body)
+
+
 @router.delete("/{workout_id}", status_code=204)
 def delete_workout(
     workout_id: uuid.UUID,

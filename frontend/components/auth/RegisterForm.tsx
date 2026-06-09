@@ -33,6 +33,7 @@ export function RegisterForm() {
   const form = useForm<RegisterFormValues>({
     resolver: zodResolver(registerSchema),
     defaultValues: {
+      display_name: '',
       username: '',
       email: '',
       password: '',
@@ -43,6 +44,7 @@ export function RegisterForm() {
   async function onSubmit(values: RegisterFormValues) {
     try {
       await register({
+        display_name: values.display_name,
         username: values.username,
         email: values.email,
         password: values.password,
@@ -74,21 +76,40 @@ export function RegisterForm() {
 
             <FormField
               control={form.control}
+              name="display_name"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Display name</FormLabel>
+                  <FormControl>
+                    <Input
+                      placeholder="Ashwin Radhakrishnan"
+                      autoComplete="name"
+                      autoFocus
+                      disabled={isSubmitting}
+                      {...field}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
               name="username"
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Username</FormLabel>
                   <FormControl>
                     <Input
-                      placeholder="your_username"
+                      placeholder="ashwin_r"
                       autoComplete="username"
-                      autoFocus
                       disabled={isSubmitting}
                       {...field}
                     />
                   </FormControl>
                   <FormDescription className="text-xs">
-                    Letters, numbers, and underscores only
+                    3–20 characters · letters, numbers, hyphens, underscores
                   </FormDescription>
                   <FormMessage />
                 </FormItem>
@@ -137,9 +158,7 @@ export function RegisterForm() {
                         aria-label={showPassword ? 'Hide password' : 'Show password'}
                         className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground transition-colors hover:text-foreground"
                       >
-                        {showPassword
-                          ? <EyeOff className="h-4 w-4" />
-                          : <Eye className="h-4 w-4" />}
+                        {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                       </button>
                     </div>
                   </FormControl>
@@ -170,9 +189,7 @@ export function RegisterForm() {
                         aria-label={showConfirm ? 'Hide password' : 'Show password'}
                         className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground transition-colors hover:text-foreground"
                       >
-                        {showConfirm
-                          ? <EyeOff className="h-4 w-4" />
-                          : <Eye className="h-4 w-4" />}
+                        {showConfirm ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                       </button>
                     </div>
                   </FormControl>
@@ -181,11 +198,7 @@ export function RegisterForm() {
               )}
             />
 
-            <Button
-              type="submit"
-              className="w-full"
-              disabled={isSubmitting}
-            >
+            <Button type="submit" className="w-full" disabled={isSubmitting}>
               {isSubmitting ? (
                 <>
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
@@ -208,10 +221,7 @@ export function RegisterForm() {
       <CardFooter className="justify-center border-t pt-4">
         <p className="text-sm text-muted-foreground">
           Already have an account?{' '}
-          <Link
-            href="/login"
-            className="font-medium text-primary underline-offset-4 hover:underline"
-          >
+          <Link href="/login" className="font-medium text-primary underline-offset-4 hover:underline">
             Sign in
           </Link>
         </p>

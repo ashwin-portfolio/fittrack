@@ -5,23 +5,27 @@ import { toast } from 'sonner'
 import { exercisesApi } from '@/lib/api/exercises'
 import { getApiErrorMessage } from '@/lib/api/client'
 import { queryKeys } from '@/lib/query/keys'
-import type { CreateExerciseRequest, ExerciseSearchParams } from '@/types/exercise'
+import type { ExerciseCreateRequest, MuscleGroup } from '@/types/workout'
 
-export function useExercises(params?: ExerciseSearchParams) {
+export function useExercises(params: {
+  q?: string
+  muscle_group?: MuscleGroup | null
+  limit?: number
+} = {}) {
   return useQuery({
-    queryKey: queryKeys.exercises.search(params?.q, params?.muscle_group),
-    queryFn: () => exercisesApi.search(params),
-    staleTime: 5 * 60 * 1000,
+    queryKey: queryKeys.exercises.search(params.q, params.muscle_group ?? undefined),
+    queryFn: () => exercisesApi.list({ ...params, skip: 0 }),
+    staleTime: 10 * 60 * 1000,
   })
 }
 
 export function useCreateExercise() {
   const queryClient = useQueryClient()
   return useMutation({
-    mutationFn: (data: CreateExerciseRequest) => exercisesApi.create(data),
+    mutationFn: (data: ExerciseCreateRequest) => exercisesApi.create(data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['exercises'] })
-      toast.success('Exercise created')
+      toast.success('Exercise created.')
     },
     onError: (error) => toast.error(getApiErrorMessage(error)),
   })

@@ -55,7 +55,11 @@ class AuthService:
         )
 
     def login(self, db: Session, body: LoginRequest) -> TokenResponse:
-        user = user_repo.get_by_email(db, body.email)
+        identifier = body.identifier.strip().lower()
+        if "@" in identifier:
+            user = user_repo.get_by_email(db, identifier)
+        else:
+            user = user_repo.get_by_username(db, identifier)
         if not user or not verify_password(body.password, user.hashed_password):
             raise HTTPException(
                 status_code=status.HTTP_401_UNAUTHORIZED,

@@ -61,14 +61,13 @@ export function Sidebar() {
       <div className="border-t p-4">
         <div className="flex items-center gap-3">
           <Avatar
-            firstName={profile?.first_name ?? null}
-            lastName={profile?.last_name ?? null}
+            name={profile?.full_name ?? null}
             username={profile?.username ?? ''}
             size="sm"
           />
           <div className="min-w-0 flex-1">
             <p className="truncate text-sm font-medium">
-              {profile?.first_name ?? profile?.username ?? ''}
+              {profile?.full_name ?? profile?.username ?? ''}
             </p>
             <p className="truncate text-xs text-muted-foreground">@{profile?.username}</p>
           </div>

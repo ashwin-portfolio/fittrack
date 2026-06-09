@@ -2,8 +2,7 @@ import { cn } from '@/lib/utils/cn'
 import { getAvatarColor, getInitials } from '@/lib/utils/avatar'
 
 interface AvatarProps {
-  firstName: string | null
-  lastName: string | null
+  name: string | null    // full_name from profile
   username: string
   size?: 'xs' | 'sm' | 'md' | 'lg'
   className?: string
@@ -16,8 +15,8 @@ const SIZE_CLASSES = {
   lg: 'h-14 w-14 text-lg',
 }
 
-export function Avatar({ firstName, lastName, username, size = 'md', className }: AvatarProps) {
-  const initials = getInitials(firstName, lastName, username)
+export function Avatar({ name, username, size = 'md', className }: AvatarProps) {
+  const initials = getInitials(name, username)
   const colorClass = getAvatarColor(username)
 
   return (

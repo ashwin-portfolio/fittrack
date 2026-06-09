@@ -1,7 +1,8 @@
 import type { Metadata } from 'next'
+import { WorkoutsListView } from '@/components/workouts/WorkoutsListView'
 
 export const metadata: Metadata = { title: 'Workouts' }
 
 export default function WorkoutsPage() {
-  return <div className="space-y-6">{/* Workouts feature coming next */}</div>
+  return <WorkoutsListView />
 }

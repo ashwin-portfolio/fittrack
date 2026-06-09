@@ -19,6 +19,9 @@ class Settings(BaseSettings):
     # CORS
     BACKEND_CORS_ORIGINS: List[str] = ["http://localhost:3000"]
 
+    # Food search
+    USDA_FDC_API_KEY: str = "DEMO_KEY"
+
     # App
     ENVIRONMENT: Literal["development", "production", "test"] = "development"
 

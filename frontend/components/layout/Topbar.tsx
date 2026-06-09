@@ -29,8 +29,7 @@ export function Topbar() {
         </button>
 
         <Avatar
-          firstName={profile?.first_name ?? null}
-          lastName={profile?.last_name ?? null}
+          name={profile?.full_name ?? null}
           username={profile?.username ?? ''}
           size="sm"
         />

@@ -1,9 +1,9 @@
 from __future__ import annotations
 
 import uuid
-from datetime import date, datetime, timezone
+from datetime import date
 
-from sqlalchemy import func, select
+from sqlalchemy import func, select  # noqa: F401
 from sqlalchemy.orm import Session, selectinload
 
 from app.models.workout import ExerciseSet, WorkoutExercise, WorkoutSession
@@ -108,8 +108,15 @@ class WorkoutRepository:
             .options(*_with_detail())
         )
 
-    def soft_delete(self, db: Session, session: WorkoutSession) -> None:
-        session.deleted_at = datetime.now(timezone.utc)
+    def clear_exercises(self, db: Session, session: WorkoutSession) -> None:
+        """Delete all workout_exercises (and their sets via cascade) for a session."""
+        for we in list(session.workout_exercises):
+            db.delete(we)
+        db.flush()
+        session.workout_exercises.clear()
+
+    def hard_delete(self, db: Session, session: WorkoutSession) -> None:
+        db.delete(session)
         db.flush()
 
 

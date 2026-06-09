@@ -1,13 +1,20 @@
+export interface CommentUser {
+  username: string
+  full_name: string
+  avatar_color: string
+}
+
 export interface Comment {
   id: string
-  feed_item_id: string
-  user_id: string
-  username: string
-  first_name: string | null
-  last_name: string | null
+  user: CommentUser
   content: string
+  is_own: boolean
   created_at: string
-  updated_at: string
+}
+
+export interface CommentListResponse {
+  items: Comment[]
+  total: number
 }
 
 export interface CreateCommentRequest {
@@ -15,25 +22,44 @@ export interface CreateCommentRequest {
 }
 
 export interface KudosResponse {
+  feed_item_id: string
   kudos_count: number
   has_kudos: boolean
 }
 
 export interface FollowResponse {
+  username: string
   is_following: boolean
-  followers_count: number
+  follower_count: number
 }
 
-export interface UserSuggestion {
+export interface UserSearchItem {
   username: string
-  first_name: string | null
-  last_name: string | null
-  followers_count: number
+  full_name: string
+  avatar_color: string
+  bio: string | null
+  follower_count: number
   is_following: boolean
+}
+
+export interface UserSearchResponse {
+  items: UserSearchItem[]
+  total: number
+  skip: number
+  limit: number
 }
 
 export interface FollowListItem {
   username: string
-  first_name: string | null
-  last_name: string | null
+  full_name: string
+  avatar_color: string
+  bio: string | null
+  is_following: boolean
+}
+
+export interface FollowListResponse {
+  items: FollowListItem[]
+  total: number
+  skip: number
+  limit: number
 }

@@ -34,7 +34,7 @@ export function LoginForm({ defaultRedirect = '/dashboard' }: LoginFormProps) {
 
   const form = useForm<LoginFormValues>({
     resolver: zodResolver(loginSchema),
-    defaultValues: { username: '', password: '' },
+    defaultValues: { identifier: '', password: '' },
   })
 
   async function onSubmit(values: LoginFormValues) {
@@ -65,14 +65,16 @@ export function LoginForm({ defaultRedirect = '/dashboard' }: LoginFormProps) {
 
             <FormField
               control={form.control}
-              name="username"
+              name="identifier"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Username</FormLabel>
+                  <FormLabel>Email or username</FormLabel>
                   <FormControl>
                     <Input
-                      placeholder="your_username"
-                      autoComplete="username"
+                      placeholder="you@example.com or your_username"
+                      autoComplete="username email"
+                      autoCapitalize="none"
+                      autoCorrect="off"
                       autoFocus
                       disabled={form.formState.isSubmitting}
                       {...field}

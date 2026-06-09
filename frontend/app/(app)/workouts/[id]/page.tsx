@@ -1,6 +1,7 @@
 import type { Metadata } from 'next'
+import { WorkoutDetailView } from '@/components/workouts/WorkoutDetailView'
 
-export const metadata: Metadata = { title: 'Workout Detail' }
+export const metadata: Metadata = { title: 'Workout' }
 
 interface Props {
   params: Promise<{ id: string }>
@@ -8,5 +9,5 @@ interface Props {
 
 export default async function WorkoutDetailPage({ params }: Props) {
   const { id } = await params
-  return <div className="space-y-6" data-workout-id={id}>{/* Workout detail coming next */}</div>
+  return <WorkoutDetailView workoutId={id} />
 }

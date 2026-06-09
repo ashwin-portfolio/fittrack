@@ -1,27 +1,56 @@
+export type MuscleGroup =
+  | 'chest'
+  | 'back'
+  | 'shoulders'
+  | 'biceps'
+  | 'triceps'
+  | 'legs'
+  | 'core'
+  | 'cardio'
+  | 'full_body'
+  | 'other'
+
+export interface Exercise {
+  id: string
+  name: string
+  muscle_group: MuscleGroup
+  is_system: boolean
+  created_by_user_id: string | null
+  created_at: string
+  updated_at: string
+}
+
+export interface ExerciseListResponse {
+  exercises: Exercise[]
+  total: number
+}
+
+export interface ExerciseCreateRequest {
+  name: string
+  muscle_group: MuscleGroup
+}
+
 export interface WorkoutSet {
-  id?: string
+  id: string
+  set_number: number
   reps: number
-  weight_kg: number | null
-  duration_seconds: number | null
-  notes: string | null
+  weight_kg: number
 }
 
 export interface WorkoutExercise {
-  id?: string
+  id: string
   exercise_id: string
-  exercise_name?: string
-  order: number
+  exercise_name: string
+  muscle_group: MuscleGroup
+  order_index: number
   sets: WorkoutSet[]
-  notes: string | null
 }
 
-export interface Workout {
+export interface WorkoutResponse {
   id: string
-  user_id: string
-  title: string
+  session_date: string       // YYYY-MM-DD
+  name: string | null
   notes: string | null
-  duration_minutes: number | null
-  workout_date: string
   is_shared: boolean
   exercises: WorkoutExercise[]
   created_at: string
@@ -30,36 +59,34 @@ export interface Workout {
 
 export interface WorkoutSummary {
   id: string
-  title: string
-  workout_date: string
-  duration_minutes: number | null
-  exercise_count: number
+  session_date: string
+  name: string | null
   is_shared: boolean
+  exercise_count: number
+  total_sets: number
   created_at: string
 }
 
-export interface CreateWorkoutRequest {
-  title: string
-  notes?: string
-  duration_minutes?: number
-  workout_date: string
-  is_shared?: boolean
-  exercises: {
-    exercise_id: string
-    order: number
-    notes?: string
-    sets: {
-      reps: number
-      weight_kg?: number
-      duration_seconds?: number
-      notes?: string
-    }[]
-  }[]
+export interface WorkoutListResponse {
+  workouts: WorkoutSummary[]
+  total: number
 }
 
-export interface WorkoutListParams {
-  skip?: number
-  limit?: number
-  start_date?: string
-  end_date?: string
+export interface WorkoutSetCreate {
+  set_number: number
+  reps: number
+  weight_kg?: number
+}
+
+export interface WorkoutExerciseCreate {
+  exercise_id: string
+  sets: WorkoutSetCreate[]
+}
+
+export interface WorkoutCreateRequest {
+  session_date: string
+  name?: string | null
+  notes?: string | null
+  is_shared?: boolean
+  exercises: WorkoutExerciseCreate[]
 }
