@@ -15,18 +15,23 @@ class ExerciseRepository:
         user_id: uuid.UUID,
         *,
         muscle_group: str | None = None,
-        search: str | None = None,
-    ) -> list[Exercise]:
-        # System exercises visible to everyone + this user's custom exercises
-        stmt = select(Exercise).where(
+        q: str | None = None,
+        skip: int = 0,
+        limit: int = 100,
+    ) -> tuple[list[Exercise], int]:
+        from sqlalchemy import func
+        base = select(Exercise).where(
             or_(Exercise.is_system.is_(True), Exercise.created_by_user_id == user_id)
         )
         if muscle_group:
-            stmt = stmt.where(Exercise.muscle_group == muscle_group)
-        if search:
-            stmt = stmt.where(Exercise.name.ilike(f"%{search}%"))
-        stmt = stmt.order_by(Exercise.is_system.desc(), Exercise.muscle_group, Exercise.name)
-        return list(db.scalars(stmt).all())
+            base = base.where(Exercise.muscle_group == muscle_group)
+        if q:
+            base = base.where(Exercise.name.ilike(f"%{q}%"))
+        base = base.order_by(Exercise.is_system.desc(), Exercise.muscle_group, Exercise.name)
+
+        total = db.scalar(select(func.count()).select_from(base.subquery())) or 0
+        rows = list(db.scalars(base.limit(limit).offset(skip)).all())
+        return rows, total
 
     def get_by_id(self, db: Session, exercise_id: uuid.UUID) -> Exercise | None:
         return db.get(Exercise, exercise_id)

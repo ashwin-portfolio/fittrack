@@ -19,14 +19,16 @@ class ExerciseService:
         current_user: User,
         *,
         muscle_group: str | None = None,
-        search: str | None = None,
+        q: str | None = None,
+        skip: int = 0,
+        limit: int = 100,
     ) -> ExerciseListResponse:
-        exercises = exercise_repo.list_for_user(
-            db, current_user.id, muscle_group=muscle_group, search=search
+        exercises, total = exercise_repo.list_for_user(
+            db, current_user.id, muscle_group=muscle_group, q=q, skip=skip, limit=limit
         )
         return ExerciseListResponse(
             exercises=[ExerciseResponse.model_validate(e) for e in exercises],
-            total=len(exercises),
+            total=total,
         )
 
     def create_exercise(

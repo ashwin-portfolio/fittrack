@@ -12,13 +12,15 @@ router = APIRouter()
 
 @router.get("", response_model=ExerciseListResponse)
 def list_exercises(
+    q: str | None = Query(default=None, max_length=100, description="Name search (case-insensitive)"),
     muscle_group: MuscleGroup | None = Query(default=None, description="Filter by muscle group"),
-    search: str | None = Query(default=None, max_length=100, description="Search by name"),
+    skip: int = Query(default=0, ge=0),
+    limit: int = Query(default=100, ge=1, le=500),
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_active_user),
 ):
     return exercise_service.list_exercises(
-        db, current_user, muscle_group=muscle_group, search=search
+        db, current_user, muscle_group=muscle_group, q=q, skip=skip, limit=limit
     )
 
 

@@ -38,6 +38,9 @@ class OnboardingRequest(BaseModel):
     age: int = Field(ge=13, le=120)
     gender: Gender
     height_cm: float | None = Field(default=None, gt=50, le=300)
+    current_weight_kg: float = Field(ge=20.0, le=500.0)
+    goal_type: str  # validated in service via GoalCreateRequest
+    target_weight_kg: float | None = Field(default=None, ge=20.0, le=500.0)
 
     @field_validator("gender")
     @classmethod
@@ -45,3 +48,8 @@ class OnboardingRequest(BaseModel):
         if v not in GENDERS:
             raise ValueError(f"gender must be one of: {sorted(GENDERS)}")
         return v
+
+
+class OnboardingResponse(BaseModel):
+    message: str
+    onboarding_complete: bool
