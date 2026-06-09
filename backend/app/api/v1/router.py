@@ -1,6 +1,6 @@
 from fastapi import APIRouter
 
-from app.api.v1.endpoints import auth, exercises, nutrition, profile, workouts
+from app.api.v1.endpoints import auth, exercises, nutrition, profile, weight, workouts
 
 api_router = APIRouter()
 
@@ -18,6 +18,9 @@ api_router.include_router(workouts.router, prefix="/workouts", tags=["workouts"]
 
 # ── Nutrition ─────────────────────────────────────────────────────────────────
 api_router.include_router(nutrition.router, prefix="/nutrition", tags=["nutrition"])
+
+# ── Weight Logs ───────────────────────────────────────────────────────────────
+api_router.include_router(weight.router, prefix="/weight", tags=["weight"])
 
 # ── Remaining routers added here as each module is implemented ────────────────
 # ORDERING RULE: within every sub-router, register literal-path routes BEFORE
