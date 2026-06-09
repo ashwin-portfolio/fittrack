@@ -23,7 +23,6 @@ const RANGES = [
   { label: '90d', days: 90 },
   { label: '180d', days: 180 },
   { label: '1y', days: 365 },
-  { label: 'All', days: undefined },
 ] as const
 
 type RangeDays = (typeof RANGES)[number]['days']
@@ -32,7 +31,6 @@ interface ChartPoint {
   label: string
   date: string
   weight_kg: number
-  body_fat?: number | null
 }
 
 function ChartTooltip({ active, payload }: TooltipProps<number, string>) {
@@ -42,9 +40,6 @@ function ChartTooltip({ active, payload }: TooltipProps<number, string>) {
     <div className="rounded-lg border bg-background px-3 py-2 text-sm shadow-md space-y-0.5">
       <p className="text-xs text-muted-foreground">{formatDate(d.date)}</p>
       <p className="font-semibold">{d.weight_kg.toFixed(1)} kg</p>
-      {d.body_fat != null && (
-        <p className="text-xs text-muted-foreground">{d.body_fat.toFixed(1)}% body fat</p>
-      )}
     </div>
   )
 }
@@ -53,14 +48,13 @@ export function WeightHistoryChart() {
   const [days, setDays] = useState<RangeDays>(90)
   const { data, isLoading } = useWeightHistory({ days })
 
-  const chartData: ChartPoint[] = (data?.entries ?? [])
+  const chartData: ChartPoint[] = (data?.items ?? [])
     .slice()
-    .sort((a, b) => a.logged_at.localeCompare(b.logged_at))
+    .sort((a, b) => a.log_date.localeCompare(b.log_date))
     .map((e) => ({
-      label: formatDateShort(e.logged_at),
-      date: e.logged_at,
+      label: formatDateShort(e.log_date),
+      date: e.log_date,
       weight_kg: e.weight_kg,
-      body_fat: e.body_fat_percentage,
     }))
 
   const weights = chartData.map((d) => d.weight_kg)

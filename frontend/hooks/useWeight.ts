@@ -33,6 +33,7 @@ export function useDeleteWeightEntry() {
     mutationFn: (id: string) => weightApi.delete(id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.weight.history() })
+      queryClient.invalidateQueries({ queryKey: queryKeys.dashboard.summary() })
       toast.success('Entry deleted')
     },
     onError: (error) => toast.error(getApiErrorMessage(error)),

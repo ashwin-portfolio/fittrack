@@ -23,20 +23,16 @@ function EntryRow({ entry, onDelete, isDeleting }: EntryRowProps) {
   return (
     <>
       <div className="flex items-center justify-between py-3 border-b last:border-0">
-        <div className="flex items-center gap-4">
-          <div>
-            <p className="font-medium tabular-nums">{entry.weight_kg.toFixed(1)} kg</p>
-            <p className="text-xs text-muted-foreground mt-0.5">
-              {formatDate(entry.logged_at)}
-              {entry.body_fat_percentage != null &&
-                ` · ${entry.body_fat_percentage.toFixed(1)}% bf`}
-            </p>
-          </div>
-          {entry.notes && (
-            <p className="text-sm text-muted-foreground truncate max-w-[200px] hidden sm:block">
-              {entry.notes}
-            </p>
-          )}
+        <div>
+          <p className="font-medium tabular-nums">{entry.weight_kg.toFixed(1)} kg</p>
+          <p className="text-xs text-muted-foreground mt-0.5">
+            {formatDate(entry.log_date)}
+            {entry.delta_kg != null && (
+              <span className={entry.delta_kg < 0 ? 'text-emerald-500' : entry.delta_kg > 0 ? 'text-rose-500' : ''}>
+                {' '}· {entry.delta_kg > 0 ? '+' : ''}{entry.delta_kg.toFixed(1)} kg
+              </span>
+            )}
+          </p>
         </div>
         <Button
           variant="ghost"
@@ -65,11 +61,11 @@ function EntryRow({ entry, onDelete, isDeleting }: EntryRowProps) {
 }
 
 export function WeightHistoryList() {
-  const { data, isLoading } = useWeightHistory({ limit: 50 })
+  const { data, isLoading } = useWeightHistory({ days: 365 })
   const deleteEntry = useDeleteWeightEntry()
 
-  const entries = [...(data?.entries ?? [])].sort(
-    (a, b) => b.logged_at.localeCompare(a.logged_at),
+  const entries = [...(data?.items ?? [])].sort(
+    (a, b) => b.log_date.localeCompare(a.log_date),
   )
 
   return (

@@ -20,6 +20,7 @@ import {
   formatWeight,
   formatWeightDelta,
 } from '@/lib/utils/format'
+import { GoalCard } from '@/components/shared/GoalCard'
 
 function getGreeting(): string {
   const h = new Date().getHours()
@@ -98,6 +99,9 @@ export function DashboardView() {
           isLoading={summaryLoading}
         />
       </div>
+
+      {/* Active goal */}
+      <GoalCard />
 
       {/* Nutrition stats */}
       <div className="grid gap-3 grid-cols-2">

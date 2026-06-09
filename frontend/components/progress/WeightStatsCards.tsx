@@ -31,8 +31,8 @@ function StatCard({ label, value, sub }: StatCardProps) {
 export function WeightStatsCards({ history, isLoading }: WeightStatsCardsProps) {
   if (isLoading) {
     return (
-      <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-        {Array.from({ length: 4 }).map((_, i) => (
+      <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
+        {Array.from({ length: 3 }).map((_, i) => (
           <Card key={i}>
             <CardContent className="p-4 space-y-2">
               <Skeleton className="h-3 w-16" />
@@ -44,10 +44,9 @@ export function WeightStatsCards({ history, isLoading }: WeightStatsCardsProps) 
     )
   }
 
-  const current = history?.current_weight
-  const starting = history?.starting_weight
+  const current = history?.latest_weight_kg
+  const starting = history?.first_weight_kg
   const change = history?.total_change_kg
-  const lowest = history?.lowest_weight
 
   const changeNode = (() => {
     if (change === null || change === undefined) return null
@@ -73,7 +72,7 @@ export function WeightStatsCards({ history, isLoading }: WeightStatsCardsProps) 
   })()
 
   return (
-    <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+    <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
       <StatCard
         label="Current"
         value={current != null ? `${current.toFixed(1)} kg` : '—'}
@@ -86,10 +85,6 @@ export function WeightStatsCards({ history, isLoading }: WeightStatsCardsProps) 
         label="Total change"
         value={change != null ? `${change > 0 ? '+' : ''}${change.toFixed(1)} kg` : '—'}
         sub={changeNode}
-      />
-      <StatCard
-        label="Lowest"
-        value={lowest != null ? `${lowest.toFixed(1)} kg` : '—'}
       />
     </div>
   )

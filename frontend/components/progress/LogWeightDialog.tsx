@@ -6,7 +6,6 @@ import { Loader2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { Textarea } from '@/components/ui/textarea'
 import {
   Dialog,
   DialogContent,
@@ -42,12 +41,8 @@ export function LogWeightDialog({ open, onOpenChange }: LogWeightDialogProps) {
     logWeight.mutate(
       {
         weight_kg: values.weight_kg,
-        body_fat_percentage:
-          values.body_fat_percentage === '' || values.body_fat_percentage === undefined
-            ? undefined
-            : values.body_fat_percentage,
-        notes: values.notes || undefined,
-        logged_at: values.logged_at,
+        log_date: values.log_date,
+        is_shared: values.is_shared ?? false,
       },
       {
         onSuccess: () => {
@@ -81,34 +76,8 @@ export function LogWeightDialog({ open, onOpenChange }: LogWeightDialogProps) {
           </div>
 
           <div className="space-y-1.5">
-            <Label htmlFor="body_fat_percentage">Body Fat % (optional)</Label>
-            <Input
-              id="body_fat_percentage"
-              type="number"
-              step="0.1"
-              placeholder="e.g. 18.5"
-              {...register('body_fat_percentage', { valueAsNumber: true })}
-            />
-            {errors.body_fat_percentage && (
-              <p className="text-xs text-destructive">
-                {errors.body_fat_percentage.message}
-              </p>
-            )}
-          </div>
-
-          <div className="space-y-1.5">
-            <Label htmlFor="logged_at">Date</Label>
-            <Input id="logged_at" type="date" {...register('logged_at')} />
-          </div>
-
-          <div className="space-y-1.5">
-            <Label htmlFor="notes">Notes (optional)</Label>
-            <Textarea
-              id="notes"
-              placeholder="Any notes..."
-              rows={2}
-              {...register('notes')}
-            />
+            <Label htmlFor="log_date">Date</Label>
+            <Input id="log_date" type="date" {...register('log_date')} />
           </div>
 
           <div className="flex justify-end gap-2 pt-2">

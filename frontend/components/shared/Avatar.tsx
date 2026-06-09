@@ -4,7 +4,7 @@ import { getAvatarColor, getInitials } from '@/lib/utils/avatar'
 interface AvatarProps {
   name: string | null    // full_name from profile
   username: string
-  size?: 'xs' | 'sm' | 'md' | 'lg'
+  size?: 'xs' | 'sm' | 'md' | 'lg' | 'xl'
   className?: string
 }
 
@@ -13,6 +13,7 @@ const SIZE_CLASSES = {
   sm: 'h-8 w-8 text-xs',
   md: 'h-10 w-10 text-sm',
   lg: 'h-14 w-14 text-lg',
+  xl: 'h-24 w-24 text-3xl',
 }
 
 export function Avatar({ name, username, size = 'md', className }: AvatarProps) {

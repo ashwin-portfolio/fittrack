@@ -3,7 +3,6 @@
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import {
-  BarChart3,
   Dumbbell,
   Home,
   LogOut,
@@ -21,7 +20,6 @@ const NAV_ITEMS = [
   { href: '/nutrition', label: 'Nutrition', icon: Salad },
   { href: '/progress', label: 'Progress', icon: TrendingUp },
   { href: '/community/feed', label: 'Community', icon: Users },
-  { href: '/profile', label: 'Profile', icon: BarChart3 },
 ]
 
 export function Sidebar() {
@@ -60,20 +58,22 @@ export function Sidebar() {
 
       <div className="border-t p-4">
         <div className="flex items-center gap-3">
-          <Avatar
-            name={profile?.full_name ?? null}
-            username={profile?.username ?? ''}
-            size="sm"
-          />
-          <div className="min-w-0 flex-1">
-            <p className="truncate text-sm font-medium">
-              {profile?.full_name ?? profile?.username ?? ''}
-            </p>
-            <p className="truncate text-xs text-muted-foreground">@{profile?.username}</p>
-          </div>
+          <Link href="/profile" className="flex items-center gap-3 min-w-0 flex-1 rounded-md hover:bg-accent px-1 py-1 transition-colors">
+            <Avatar
+              name={profile?.full_name ?? null}
+              username={profile?.username ?? ''}
+              size="sm"
+            />
+            <div className="min-w-0">
+              <p className="truncate text-sm font-medium">
+                {profile?.full_name ?? profile?.username ?? ''}
+              </p>
+              <p className="truncate text-xs text-muted-foreground">@{profile?.username}</p>
+            </div>
+          </Link>
           <button
             onClick={logout}
-            className="ml-auto rounded-md p-1.5 text-muted-foreground hover:bg-accent hover:text-accent-foreground"
+            className="rounded-md p-1.5 text-muted-foreground hover:bg-accent hover:text-accent-foreground"
             aria-label="Sign out"
           >
             <LogOut className="h-4 w-4" />
