@@ -1,15 +1,15 @@
 import type { Metadata } from 'next'
+import { LoginForm } from '@/components/auth/LoginForm'
 
 export const metadata: Metadata = { title: 'Sign in' }
 
-export default function LoginPage() {
-  return (
-    <div className="flex flex-col gap-6">
-      <div className="text-center">
-        <h1 className="text-2xl font-bold">Welcome back</h1>
-        <p className="mt-1 text-sm text-muted-foreground">Sign in to your account</p>
-      </div>
-      {/* LoginForm goes here */}
-    </div>
-  )
+interface Props {
+  searchParams: Promise<{ from?: string }>
+}
+
+export default async function LoginPage({ searchParams }: Props) {
+  const { from } = await searchParams
+  // Sanitise the redirect — only allow relative paths to prevent open redirect
+  const redirect = from?.startsWith('/') ? from : '/dashboard'
+  return <LoginForm defaultRedirect={redirect} />
 }
