@@ -1,6 +1,9 @@
 from fastapi import APIRouter
 
-from app.api.v1.endpoints import auth, dashboard, exercises, goals, nutrition, profile, weight, workouts
+from app.api.v1.endpoints import (
+    auth, dashboard, exercises, feed, follows, goals,
+    nutrition, profile, social, users, weight, workouts,
+)
 
 api_router = APIRouter()
 
@@ -27,6 +30,18 @@ api_router.include_router(goals.router, prefix="/goals", tags=["goals"])
 
 # ── Dashboard ─────────────────────────────────────────────────────────────────
 api_router.include_router(dashboard.router, prefix="/dashboard", tags=["dashboard"])
+
+# ── Feed ──────────────────────────────────────────────────────────────────────
+api_router.include_router(feed.router, prefix="/feed", tags=["feed"])
+
+# ── Social (Kudos + Comments) ─────────────────────────────────────────────────
+api_router.include_router(social.router, tags=["social"])
+
+# ── Follows ───────────────────────────────────────────────────────────────────
+api_router.include_router(follows.router, prefix="/follows", tags=["follows"])
+
+# ── Users ─────────────────────────────────────────────────────────────────────
+api_router.include_router(users.router, prefix="/users", tags=["users"])
 
 # ── Remaining routers added here as each module is implemented ────────────────
 # ORDERING RULE: within every sub-router, register literal-path routes BEFORE

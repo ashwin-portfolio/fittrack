@@ -7,6 +7,7 @@ from fastapi import HTTPException, status
 from sqlalchemy.orm import Session
 
 from app.models.user import User
+from app.repositories.feed_repository import feed_repo
 from app.repositories.weight_repository import weight_repo
 from app.schemas.weight import WeightHistoryResponse, WeightLogRequest, WeightLogResponse
 
@@ -22,6 +23,11 @@ class WeightService:
             weight_kg=body.weight_kg,
             is_shared=body.is_shared,
         )
+        if is_new and body.is_shared:
+            feed_repo.create_feed_item(
+                db, user_id=current_user.id, activity_type="weight",
+                weight_log_id=entry.id,
+            )
         prev = weight_repo.get_previous(db, current_user.id, body.log_date)
         delta_kg = round(body.weight_kg - prev.weight_kg, 2) if prev else None
         return (
@@ -94,6 +100,7 @@ class WeightService:
             raise HTTPException(
                 status_code=status.HTTP_403_FORBIDDEN, detail="Access denied."
             )
+        feed_repo.soft_delete_by_weight(db, entry.id)
         weight_repo.soft_delete(db, entry)
 
 

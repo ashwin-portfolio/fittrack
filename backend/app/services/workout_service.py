@@ -8,6 +8,7 @@ from sqlalchemy.orm import Session
 from app.models.user import User
 from app.models.workout import WorkoutSession
 from app.repositories.exercise_repository import exercise_repo
+from app.repositories.feed_repository import feed_repo
 from app.repositories.workout_repository import workout_repo
 from app.schemas.workout import (
     ExerciseSetResponse,
@@ -103,6 +104,12 @@ class WorkoutService:
         for we in session.workout_exercises:
             db.refresh(we, ["exercise", "sets"])
 
+        if body.is_shared:
+            feed_repo.create_feed_item(
+                db, user_id=current_user.id, activity_type="workout",
+                workout_session_id=session.id,
+            )
+
         return _build_response(session)
 
     def list_workouts(
@@ -142,6 +149,7 @@ class WorkoutService:
     ) -> None:
         session = workout_repo.get_by_id(db, workout_id)
         _check_ownership(session, current_user.id)
+        feed_repo.soft_delete_by_workout(db, session.id)  # type: ignore[union-attr]
         workout_repo.soft_delete(db, session)  # type: ignore[arg-type]
 
 

@@ -7,6 +7,7 @@ from fastapi import HTTPException, status
 from sqlalchemy.orm import Session
 
 from app.models.user import User
+from app.repositories.feed_repository import feed_repo
 from app.repositories.nutrition_repository import nutrition_repo
 from app.schemas.nutrition import (
     DailySummaryResponse,
@@ -33,6 +34,11 @@ class NutritionService:
             fat_g=body.fat_g,
             is_shared=body.is_shared,
         )
+        if body.is_shared:
+            feed_repo.create_feed_item(
+                db, user_id=current_user.id, activity_type="meal",
+                nutrition_entry_id=entry.id,
+            )
         return NutritionResponse.model_validate(entry)
 
     def list_entries(
@@ -85,6 +91,7 @@ class NutritionService:
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Entry not found")
         if entry.user_id != current_user.id:
             raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Access denied")
+        feed_repo.soft_delete_by_nutrition(db, entry.id)
         nutrition_repo.soft_delete(db, entry)
 
 
