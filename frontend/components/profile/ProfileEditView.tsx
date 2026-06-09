@@ -25,6 +25,8 @@ import {
 } from '@/components/ui/select'
 import { Textarea } from '@/components/ui/textarea'
 import { Avatar } from '@/components/shared/Avatar'
+import { GoalSection } from '@/components/profile/GoalSection'
+import { Skeleton } from '@/components/ui/skeleton'
 import { useMyProfile, useUpdateProfile } from '@/hooks/useProfile'
 import { useAuthContext } from '@/lib/auth/context'
 import { profileEditSchema, type ProfileEditValues } from '@/lib/validators/profile'
@@ -73,7 +75,28 @@ export function ProfileEditView() {
     )
   }
 
-  if (isLoading) return null
+  if (isLoading) {
+    return (
+      <div className="space-y-6 max-w-lg">
+        <Skeleton className="h-8 w-36" />
+        <div className="flex items-center gap-4">
+          <Skeleton className="h-20 w-20 rounded-full" />
+          <div className="space-y-2">
+            <Skeleton className="h-4 w-24" />
+            <Skeleton className="h-3 w-44" />
+          </div>
+        </div>
+        <div className="space-y-5">
+          {Array.from({ length: 5 }).map((_, i) => (
+            <div key={i} className="space-y-1.5">
+              <Skeleton className="h-4 w-20" />
+              <Skeleton className="h-10 w-full" />
+            </div>
+          ))}
+        </div>
+      </div>
+    )
+  }
 
   const username = user?.username ?? ''
   const bioValue = form.watch('bio') ?? ''
@@ -204,11 +227,11 @@ export function ProfileEditView() {
                     </SelectTrigger>
                   </FormControl>
                   <SelectContent>
-                    <SelectItem value="none">Prefer not to say</SelectItem>
+                    <SelectItem value="none">Not specified</SelectItem>
                     <SelectItem value="male">Male</SelectItem>
                     <SelectItem value="female">Female</SelectItem>
                     <SelectItem value="other">Other</SelectItem>
-                    <SelectItem value="prefer_not_to_say">Rather not say</SelectItem>
+                    <SelectItem value="prefer_not_to_say">Prefer not to say</SelectItem>
                   </SelectContent>
                 </Select>
                 <FormMessage />
@@ -261,6 +284,9 @@ export function ProfileEditView() {
           </div>
         </form>
       </Form>
+
+      {/* Goal management — independent form, separate API call */}
+      <GoalSection />
     </div>
   )
 }

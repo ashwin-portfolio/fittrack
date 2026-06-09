@@ -11,6 +11,7 @@ export function useWeightHistory(params?: WeightHistoryParams) {
   return useQuery({
     queryKey: queryKeys.weight.history(params?.days),
     queryFn: () => weightApi.getHistory(params),
+    staleTime: 5 * 60 * 1000,
   })
 }
 

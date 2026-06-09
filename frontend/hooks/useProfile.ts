@@ -12,6 +12,7 @@ export function useMyProfile() {
   return useQuery({
     queryKey: queryKeys.profile.me(),
     queryFn: profileApi.getMe,
+    staleTime: 5 * 60 * 1000,
   })
 }
 

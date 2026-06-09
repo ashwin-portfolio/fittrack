@@ -8,14 +8,13 @@ import { useWeightHistory } from '@/hooks/useWeight'
 import type { GoalType } from '@/types/goal'
 
 const GOAL_LABELS: Record<GoalType, string> = {
-  lose_weight: 'Lose Weight',
-  build_muscle: 'Build Muscle',
-  maintain_weight: 'Maintain Weight',
-  improve_endurance: 'Improve Endurance',
-  general_fitness: 'General Fitness',
+  weight_loss:  'Lose Weight',
+  weight_gain:  'Gain Weight',
+  muscle_gain:  'Build Muscle',
+  maintenance:  'Maintain Weight',
 }
 
-const WEIGHT_GOAL_TYPES = new Set<GoalType>(['lose_weight', 'build_muscle', 'maintain_weight'])
+const WEIGHT_GOAL_TYPES = new Set<GoalType>(['weight_loss', 'weight_gain', 'muscle_gain'])
 
 function computeProgress(
   goalType: GoalType,
@@ -23,16 +22,13 @@ function computeProgress(
   current: number,
   target: number,
 ): number {
-  if (goalType === 'lose_weight') {
+  if (goalType === 'weight_loss') {
     if (starting <= target) return 0
     return Math.min(100, Math.max(0, ((starting - current) / (starting - target)) * 100))
   }
-  if (goalType === 'build_muscle') {
-    if (target <= starting) return 0
-    return Math.min(100, Math.max(0, ((current - starting) / (target - starting)) * 100))
-  }
-  const range = Math.abs(starting - target) || 1
-  return Math.min(100, Math.max(0, 100 - (Math.abs(current - target) / range) * 100))
+  // weight_gain / muscle_gain
+  if (target <= starting) return 0
+  return Math.min(100, Math.max(0, ((current - starting) / (target - starting)) * 100))
 }
 
 export function GoalCard() {
@@ -64,7 +60,7 @@ export function GoalCard() {
       <Card>
         <CardContent className="flex items-center gap-3 p-4 text-sm text-muted-foreground">
           <Target className="h-4 w-4 shrink-0" />
-          <span>No active goal set.</span>
+          <span>No active goal set. Add one in your profile.</span>
         </CardContent>
       </Card>
     )
@@ -85,7 +81,7 @@ export function GoalCard() {
       <CardHeader className="pb-2">
         <CardTitle className="flex items-center gap-2 text-base font-semibold">
           <Target className="h-4 w-4 text-primary" />
-          {GOAL_LABELS[goal.goal_type]}
+          {GOAL_LABELS[goal.goal_type] ?? goal.goal_type}
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-3">
@@ -113,23 +109,13 @@ export function GoalCard() {
                 <p className="text-xs text-muted-foreground">
                   Progress:{' '}
                   <span className="font-semibold text-foreground">{Math.round(progress)}%</span>
-                  {goal.target_date && (
-                    <span className="ml-2">
-                      · Due{' '}
-                      {new Date(goal.target_date).toLocaleDateString('en-US', {
-                        month: 'short',
-                        day: 'numeric',
-                        year: 'numeric',
-                      })}
-                    </span>
-                  )}
                 </p>
               </>
             )}
           </>
         ) : (
           <p className="text-sm text-muted-foreground">
-            {goal.notes ?? 'Keep going — stay consistent.'}
+            Keep going — stay consistent.
           </p>
         )}
       </CardContent>

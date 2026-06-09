@@ -8,6 +8,7 @@ from sqlalchemy.orm import Session
 from app.models.user import User
 from app.repositories.goal_repository import goal_repo
 from app.repositories.profile_repository import profile_repo
+from app.repositories.social_repository import social_repo
 from app.repositories.weight_repository import weight_repo
 from app.schemas.goal import GoalCreateRequest
 from app.schemas.profile import (
@@ -19,11 +20,31 @@ from app.schemas.profile import (
 
 
 class ProfileService:
+    def _to_response(self, db: Session, current_user: User, profile) -> ProfileResponse:
+        return ProfileResponse(
+            id=profile.id,
+            user_id=profile.user_id,
+            username=current_user.username,
+            email=current_user.email,
+            full_name=profile.full_name,
+            age=profile.age,
+            gender=profile.gender,
+            height_cm=profile.height_cm,
+            bio=profile.bio,
+            is_public=profile.is_public,
+            avatar_color=profile.avatar_color,
+            onboarding_complete=profile.onboarding_complete,
+            follower_count=social_repo.follower_count(db, current_user.id),
+            following_count=social_repo.following_count(db, current_user.id),
+            created_at=profile.created_at,
+            updated_at=profile.updated_at,
+        )
+
     def get_my_profile(self, db: Session, current_user: User) -> ProfileResponse:
         profile = profile_repo.get_by_user_id(db, current_user.id)
         if profile is None:
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Profile not found")
-        return ProfileResponse.model_validate(profile)
+        return self._to_response(db, current_user, profile)
 
     def update_profile(
         self, db: Session, current_user: User, body: ProfileUpdateRequest
@@ -32,13 +53,12 @@ class ProfileService:
         if profile is None:
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Profile not found")
 
-        # Only apply fields that were explicitly sent in the request body
         fields = body.model_dump(exclude_unset=True)
         if not fields:
-            return ProfileResponse.model_validate(profile)
+            return self._to_response(db, current_user, profile)
 
         updated = profile_repo.update(db, profile, fields)
-        return ProfileResponse.model_validate(updated)
+        return self._to_response(db, current_user, updated)
 
     def complete_onboarding(
         self, db: Session, current_user: User, body: OnboardingRequest

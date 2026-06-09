@@ -204,7 +204,10 @@ export function EditWorkoutView({ workoutId }: EditWorkoutViewProps) {
         </div>
 
         {/* Submit */}
-        <div className="fixed bottom-0 left-0 right-0 border-t bg-background p-4 md:static md:border-0 md:bg-transparent md:p-0">
+        <div
+          className="fixed left-0 right-0 border-t bg-background p-4 md:static md:border-0 md:bg-transparent md:p-0"
+          style={{ bottom: 'calc(4rem + env(safe-area-inset-bottom))' }}
+        >
           <Button
             className="w-full md:w-auto"
             size="lg"

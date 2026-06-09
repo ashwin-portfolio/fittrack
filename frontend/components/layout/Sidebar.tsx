@@ -15,16 +15,16 @@ import { useAuthContext } from '@/lib/auth/context'
 import { Avatar } from '@/components/shared/Avatar'
 
 const NAV_ITEMS = [
-  { href: '/dashboard', label: 'Dashboard', icon: Home },
-  { href: '/workouts', label: 'Workouts', icon: Dumbbell },
-  { href: '/nutrition', label: 'Nutrition', icon: Salad },
-  { href: '/progress', label: 'Progress', icon: TrendingUp },
-  { href: '/community/feed', label: 'Community', icon: Users },
+  { href: '/dashboard',      label: 'Dashboard',  icon: Home,      exact: true },
+  { href: '/workouts',       label: 'Workouts',   icon: Dumbbell,  exact: false },
+  { href: '/nutrition',      label: 'Nutrition',  icon: Salad,     exact: false },
+  { href: '/progress',       label: 'Progress',   icon: TrendingUp, exact: false },
+  { href: '/community',      label: 'Community',  icon: Users,     exact: false },
 ]
 
 export function Sidebar() {
   const pathname = usePathname()
-  const { profile, logout } = useAuthContext()
+  const { user, profile, logout } = useAuthContext()
 
   return (
     <aside className="hidden w-60 shrink-0 border-r bg-card md:flex md:flex-col">
@@ -33,11 +33,8 @@ export function Sidebar() {
       </div>
 
       <nav className="flex-1 space-y-1 p-4">
-        {NAV_ITEMS.map(({ href, label, icon: Icon }) => {
-          const active =
-            href === '/dashboard'
-              ? pathname === href
-              : pathname.startsWith(href)
+        {NAV_ITEMS.map(({ href, label, icon: Icon, exact }) => {
+          const active = exact ? pathname === href : pathname.startsWith(href)
           return (
             <Link
               key={href}
@@ -58,7 +55,15 @@ export function Sidebar() {
 
       <div className="border-t p-4">
         <div className="flex items-center gap-3">
-          <Link href="/profile" className="flex items-center gap-3 min-w-0 flex-1 rounded-md hover:bg-accent px-1 py-1 transition-colors">
+          <Link
+            href="/profile"
+            className={cn(
+              'flex items-center gap-3 min-w-0 flex-1 rounded-md px-1 py-1 transition-colors',
+              pathname.startsWith('/profile')
+                ? 'bg-primary/10 text-primary'
+                : 'hover:bg-accent',
+            )}
+          >
             <Avatar
               name={profile?.full_name ?? null}
               username={profile?.username ?? ''}
@@ -66,9 +71,11 @@ export function Sidebar() {
             />
             <div className="min-w-0">
               <p className="truncate text-sm font-medium">
-                {profile?.full_name ?? profile?.username ?? ''}
+                {profile?.full_name ?? user?.username ?? ''}
               </p>
-              <p className="truncate text-xs text-muted-foreground">@{profile?.username}</p>
+              <p className="truncate text-xs text-muted-foreground">
+                @{profile?.username ?? user?.username ?? ''}
+              </p>
             </div>
           </Link>
           <button

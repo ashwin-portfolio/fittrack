@@ -11,6 +11,8 @@ from app.core.constants import GENDERS, Gender
 class ProfileResponse(BaseModel):
     id: uuid.UUID
     user_id: uuid.UUID
+    username: str
+    email: str
     full_name: str
     age: int | None
     gender: str | None
@@ -19,10 +21,12 @@ class ProfileResponse(BaseModel):
     is_public: bool
     avatar_color: str
     onboarding_complete: bool
+    follower_count: int = 0
+    following_count: int = 0
     created_at: datetime
     updated_at: datetime
 
-    model_config = {"from_attributes": True}
+    model_config = {"from_attributes": False}
 
 
 class ProfileUpdateRequest(BaseModel):

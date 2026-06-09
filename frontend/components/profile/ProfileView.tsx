@@ -1,27 +1,14 @@
 'use client'
 
 import Link from 'next/link'
-import { Calendar, Globe, Lock, Pencil, Ruler, Target } from 'lucide-react'
+import { Calendar, Globe, Lock, Pencil, Ruler } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
-import { Badge } from '@/components/ui/badge'
 import { Skeleton } from '@/components/ui/skeleton'
 import { Avatar } from '@/components/shared/Avatar'
+import { GoalCard } from '@/components/shared/GoalCard'
 import { useMyProfile } from '@/hooks/useProfile'
-import { useActiveGoal } from '@/hooks/useGoals'
 import { useAuthContext } from '@/lib/auth/context'
-
-const GOAL_LABELS: Record<string, string> = {
-  lose_weight: 'Lose Weight',
-  build_muscle: 'Build Muscle',
-  maintain_weight: 'Maintain Weight',
-  improve_endurance: 'Improve Endurance',
-  general_fitness: 'General Fitness',
-  weight_loss: 'Lose Weight',
-  weight_gain: 'Gain Weight',
-  muscle_gain: 'Build Muscle',
-  maintenance: 'Maintenance',
-}
 
 const GENDER_LABELS: Record<string, string> = {
   male: 'Male',
@@ -42,7 +29,6 @@ function StatBox({ label, value }: { label: string; value: string | number }) {
 export function ProfileView() {
   const { user } = useAuthContext()
   const { data: profile, isLoading } = useMyProfile()
-  const { data: goal } = useActiveGoal()
 
   if (isLoading || !user) {
     return (
@@ -58,21 +44,22 @@ export function ProfileView() {
         </div>
         <Skeleton className="h-20 w-full rounded-xl" />
         <Skeleton className="h-28 w-full rounded-xl" />
+        <Skeleton className="h-28 w-full rounded-xl" />
       </div>
     )
   }
 
-  if (!profile || !user) return null
+  if (!profile) return null
 
   const username = user.username
-  const followerCount = (profile as any).follower_count ?? 0
-  const followingCount = (profile as any).following_count ?? 0
+  const followerCount = profile.follower_count ?? 0
+  const followingCount = profile.following_count ?? 0
 
   return (
     <div className="space-y-6 max-w-lg mx-auto">
       {/* Avatar + identity */}
       <div className="flex flex-col items-center gap-3 pt-4 text-center">
-        <Avatar name={profile.full_name} username={username} size="xl" />
+        <Avatar name={profile.full_name} username={username} size="lg" />
 
         <div className="space-y-0.5">
           <h1 className="text-xl font-bold">{profile.full_name}</h1>
@@ -86,7 +73,8 @@ export function ProfileView() {
         <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
           {profile.is_public
             ? <><Globe className="h-3 w-3" /> Public profile</>
-            : <><Lock className="h-3 w-3" /> Private profile</>}
+            : <><Lock className="h-3 w-3" /> Private profile</>
+          }
         </div>
 
         <Link href="/profile/edit">
@@ -145,34 +133,13 @@ export function ProfileView() {
         </CardContent>
       </Card>
 
-      {/* Active goal */}
-      {goal && (
-        <Card>
-          <CardContent className="pt-4 pb-4 space-y-2">
-            <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-              Active Goal
-            </p>
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <Target className="h-4 w-4 text-primary" />
-                <span className="text-sm font-medium">
-                  {GOAL_LABELS[goal.goal_type] ?? goal.goal_type}
-                </span>
-              </div>
-              {goal.target_weight_kg != null && (
-                <Badge variant="secondary">Target: {goal.target_weight_kg} kg</Badge>
-              )}
-            </div>
-            {goal.target_date && (
-              <p className="text-xs text-muted-foreground">
-                By {new Date(goal.target_date).toLocaleDateString(undefined, {
-                  month: 'long', year: 'numeric',
-                })}
-              </p>
-            )}
-          </CardContent>
-        </Card>
-      )}
+      {/* Active goal — full card with progress */}
+      <div className="space-y-2">
+        <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground px-0.5">
+          Active Goal
+        </p>
+        <GoalCard />
+      </div>
     </div>
   )
 }

@@ -6,12 +6,12 @@ import { Dumbbell, Home, Salad, TrendingUp, User, Users } from 'lucide-react'
 import { cn } from '@/lib/utils/cn'
 
 const NAV_ITEMS = [
-  { href: '/dashboard', label: 'Home',      icon: Home       },
-  { href: '/workouts',  label: 'Workouts',  icon: Dumbbell   },
-  { href: '/nutrition', label: 'Nutrition', icon: Salad      },
-  { href: '/progress',  label: 'Progress',  icon: TrendingUp },
-  { href: '/community/feed', label: 'Community', icon: Users },
-  { href: '/profile',   label: 'Profile',   icon: User       },
+  { href: '/dashboard', activePrefix: '/dashboard', label: 'Home',      icon: Home,       exact: true  },
+  { href: '/workouts',  activePrefix: '/workouts',  label: 'Workouts',  icon: Dumbbell,   exact: false },
+  { href: '/nutrition', activePrefix: '/nutrition', label: 'Nutrition', icon: Salad,      exact: false },
+  { href: '/progress',  activePrefix: '/progress',  label: 'Progress',  icon: TrendingUp, exact: false },
+  { href: '/community/feed', activePrefix: '/community', label: 'Community', icon: Users, exact: false },
+  { href: '/profile',   activePrefix: '/profile',   label: 'Profile',   icon: User,       exact: false },
 ]
 
 export function MobileNav() {
@@ -23,11 +23,8 @@ export function MobileNav() {
       style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}
     >
       <div className="flex h-16 items-center">
-        {NAV_ITEMS.map(({ href, label, icon: Icon }) => {
-          const active =
-            href === '/dashboard'
-              ? pathname === href
-              : pathname.startsWith(href)
+        {NAV_ITEMS.map(({ href, activePrefix, label, icon: Icon, exact }) => {
+          const active = exact ? pathname === activePrefix : pathname.startsWith(activePrefix)
           return (
             <Link
               key={href}

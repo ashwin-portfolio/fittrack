@@ -2,8 +2,9 @@ export type Gender = 'male' | 'female' | 'other' | 'prefer_not_to_say'
 
 export interface Profile {
   id: string
-  email: string
+  user_id: string
   username: string
+  email: string
   full_name: string
   age: number | null
   gender: Gender | null
@@ -15,6 +16,7 @@ export interface Profile {
   follower_count: number
   following_count: number
   created_at: string
+  updated_at: string
 }
 
 export interface UpdateProfileRequest {
