@@ -3,7 +3,7 @@ from __future__ import annotations
 import uuid
 from datetime import date, datetime, timezone
 
-from sqlalchemy import func, select
+from sqlalchemy import and_, func, select
 from sqlalchemy.orm import Session
 
 from app.models.nutrition import NutritionEntry
@@ -91,6 +91,38 @@ class NutritionRepository:
             )
         ).one()
         return row._asdict()
+
+    def recent_foods(
+        self, db: Session, user_id: uuid.UUID, limit: int = 20
+    ) -> list[NutritionEntry]:
+        """One entry per unique food_name, ordered by most recently eaten."""
+        subq = (
+            select(
+                NutritionEntry.food_name,
+                func.max(NutritionEntry.created_at).label("latest"),
+            )
+            .where(
+                NutritionEntry.user_id == user_id,
+                NutritionEntry.deleted_at.is_(None),
+            )
+            .group_by(NutritionEntry.food_name)
+            .subquery()
+        )
+        return list(
+            db.scalars(
+                select(NutritionEntry)
+                .join(
+                    subq,
+                    and_(
+                        NutritionEntry.food_name == subq.c.food_name,
+                        NutritionEntry.created_at == subq.c.latest,
+                        NutritionEntry.user_id == user_id,
+                    ),
+                )
+                .order_by(subq.c.latest.desc())
+                .limit(limit)
+            ).all()
+        )
 
     def soft_delete(self, db: Session, entry: NutritionEntry) -> None:
         entry.deleted_at = datetime.now(timezone.utc)

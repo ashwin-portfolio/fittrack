@@ -13,6 +13,7 @@ from app.schemas.nutrition import (
     NutritionCreateRequest,
     NutritionListResponse,
     NutritionResponse,
+    RecentFoodResponse,
 )
 
 
@@ -58,6 +59,23 @@ class NutritionService:
     ) -> DailySummaryResponse:
         totals = nutrition_repo.daily_totals(db, current_user.id, entry_date)
         return DailySummaryResponse(date=entry_date, **totals)
+
+    def recent_foods(
+        self, db: Session, current_user: User, limit: int = 20
+    ) -> list[RecentFoodResponse]:
+        entries = nutrition_repo.recent_foods(db, current_user.id, limit=limit)
+        return [
+            RecentFoodResponse(
+                food_name=e.food_name,
+                meal_type=e.meal_type,
+                calories=e.calories,
+                protein_g=e.protein_g,
+                carbs_g=e.carbs_g,
+                fat_g=e.fat_g,
+                last_eaten=e.created_at,
+            )
+            for e in entries
+        ]
 
     def delete_entry(
         self, db: Session, current_user: User, entry_id: uuid.UUID
