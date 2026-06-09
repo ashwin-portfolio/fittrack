@@ -1,0 +1,36 @@
+import { cn } from '@/lib/utils/cn'
+import { getAvatarColor, getInitials } from '@/lib/utils/avatar'
+
+interface AvatarProps {
+  firstName: string | null
+  lastName: string | null
+  username: string
+  size?: 'xs' | 'sm' | 'md' | 'lg'
+  className?: string
+}
+
+const SIZE_CLASSES = {
+  xs: 'h-6 w-6 text-[10px]',
+  sm: 'h-8 w-8 text-xs',
+  md: 'h-10 w-10 text-sm',
+  lg: 'h-14 w-14 text-lg',
+}
+
+export function Avatar({ firstName, lastName, username, size = 'md', className }: AvatarProps) {
+  const initials = getInitials(firstName, lastName, username)
+  const colorClass = getAvatarColor(username)
+
+  return (
+    <div
+      className={cn(
+        'flex shrink-0 items-center justify-center rounded-full font-semibold text-white',
+        SIZE_CLASSES[size],
+        colorClass,
+        className,
+      )}
+      aria-label={username}
+    >
+      {initials}
+    </div>
+  )
+}

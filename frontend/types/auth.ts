@@ -1,0 +1,32 @@
+export interface LoginRequest {
+  username: string
+  password: string
+}
+
+export interface RegisterRequest {
+  username: string
+  email: string
+  password: string
+}
+
+export interface TokenResponse {
+  access_token: string
+  refresh_token: string
+  token_type: string
+}
+
+export interface RefreshRequest {
+  refresh_token: string
+}
+
+export interface LogoutRequest {
+  refresh_token: string
+}
+
+export interface AuthUser {
+  id: string
+  username: string
+  email: string
+  is_active: boolean
+  created_at: string
+}
