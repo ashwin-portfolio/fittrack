@@ -4,23 +4,28 @@ import uuid
 from datetime import date
 from typing import TYPE_CHECKING
 
-from sqlalchemy import Boolean, Date, Float, ForeignKey, Index
+from sqlalchemy import Boolean, Date, Float, ForeignKey, Index, text
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.models.base import Base
-from app.models.mixins import TimestampMixin
+from app.models.mixins import SoftDeleteMixin, TimestampMixin
 
 if TYPE_CHECKING:
     from app.models.user import User
 
 
-class WeightLog(Base, TimestampMixin):
-    # No SoftDeleteMixin — weight logs are hard-deleted (DELETE /weight/{id})
+class WeightLog(Base, TimestampMixin, SoftDeleteMixin):
     __tablename__ = "weight_logs"
     __table_args__ = (
-        # Unique index enforces one entry per user per day and covers the
-        # upsert lookup used by POST /weight
-        Index("idx_weight_logs_user_date", "user_id", "log_date", unique=True),
+        # Partial unique index: one active (non-deleted) entry per user per day.
+        # Allows re-logging after a soft delete on the same date.
+        Index(
+            "idx_weight_logs_user_date",
+            "user_id",
+            "log_date",
+            unique=True,
+            postgresql_where=text("deleted_at IS NULL"),
+        ),
     )
 
     id: Mapped[uuid.UUID] = mapped_column(primary_key=True, default=uuid.uuid4)
