@@ -60,8 +60,9 @@
 
 ┌──────────────────────────────────────────────────────────────────────────────────┐
 │                           WEIGHT_LOGS                                             │
-│  id · user_id (FK) · log_date · weight_kg · is_shared · created_at · updated_at  │
-│  UNIQUE(user_id, log_date)                                                        │
+│  id · user_id (FK) · log_date · weight_kg · is_shared · deleted_at               │
+│  created_at · updated_at                                                          │
+│  PARTIAL UNIQUE(user_id, log_date) WHERE deleted_at IS NULL                       │
 └──────────────────────────────────────────────────────────────────────────────────┘
 
 ┌──────────────────────────────────────────────────────────────────────────────────┐
@@ -252,9 +253,10 @@
 | log_date | DATE | NOT NULL | |
 | weight_kg | FLOAT | NOT NULL | |
 | is_shared | BOOLEAN | NOT NULL, DEFAULT false | |
+| deleted_at | TIMESTAMPTZ | NULL | **soft delete** |
 | created_at | TIMESTAMPTZ | NOT NULL, DEFAULT now() | |
 | updated_at | TIMESTAMPTZ | NOT NULL, DEFAULT now() | |
-| **UNIQUE** | | (user_id, log_date) | one entry per day |
+| **PARTIAL UNIQUE** | | (user_id, log_date) WHERE deleted_at IS NULL | one active entry per day; allows re-logging same date after soft delete |
 
 ---
 
@@ -357,7 +359,7 @@ CREATE INDEX idx_nutrition_shared    ON nutrition_entries(is_shared);
 CREATE INDEX idx_nutrition_deleted   ON nutrition_entries(deleted_at);
 
 -- weight_logs
-CREATE UNIQUE INDEX idx_weight_logs_user_date ON weight_logs(user_id, log_date);
+CREATE UNIQUE INDEX idx_weight_logs_user_date ON weight_logs(user_id, log_date) WHERE deleted_at IS NULL;
 
 -- activity_feed_items
 CREATE INDEX idx_feed_public_created ON activity_feed_items(is_public, created_at);
@@ -408,6 +410,7 @@ users           * ──── *   users              (via follows — self-refe
 |---|---|---|---|
 | workout_sessions | ✓ | WHERE deleted_at IS NULL | SET deleted_at = now() |
 | nutrition_entries | ✓ | WHERE deleted_at IS NULL | SET deleted_at = now() |
+| weight_logs | ✓ | WHERE deleted_at IS NULL | SET deleted_at = now() |
 | activity_feed_items | ✓ | WHERE deleted_at IS NULL | SET deleted_at = now() |
 | comments | ✓ | WHERE deleted_at IS NULL | SET deleted_at = now() |
 | All others | — | No filter needed | Hard delete (N/A) |

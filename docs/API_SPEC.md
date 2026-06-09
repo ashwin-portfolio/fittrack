@@ -100,6 +100,9 @@ Nutrition
   POST   /api/v1/nutrition
   DELETE /api/v1/nutrition/{id}
   GET    /api/v1/nutrition/daily-summary
+  GET    /api/v1/nutrition/search
+  GET    /api/v1/nutrition/recent
+  GET    /api/v1/nutrition/barcode/{barcode}
 
 Weight
   POST   /api/v1/weight
@@ -130,7 +133,7 @@ Follows
   DELETE /api/v1/follows/{username}
 ```
 
-**Total: 34 endpoints**
+**Total: 37 endpoints**
 
 ---
 
@@ -499,27 +502,35 @@ Creates a new goal and deactivates the current active goal.
 |---|---|---|---|
 | q | string | null | Partial name search (case-insensitive) |
 | muscle_group | string | null | Filter by muscle group |
-| include_custom | bool | true | Include user's custom exercises |
+| skip | int | 0 | |
+| limit | int | 100 | Max 500 |
+
+> Always returns both system exercises and the requesting user's custom exercises.
 
 **Response `200`**
 ```json
 {
-  "items": [
+  "exercises": [
     {
       "id": "exercise-uuid",
       "name": "Bench Press",
       "muscle_group": "chest",
       "is_system": true,
-      "created_by_user_id": null
+      "created_by_user_id": null,
+      "created_at": "2025-01-01T00:00:00Z",
+      "updated_at": "2025-01-01T00:00:00Z"
     },
     {
       "id": "custom-uuid",
       "name": "Cable Fly Variation",
       "muscle_group": "chest",
       "is_system": false,
-      "created_by_user_id": "user-uuid"
+      "created_by_user_id": "user-uuid",
+      "created_at": "2025-01-15T09:00:00Z",
+      "updated_at": "2025-01-15T09:00:00Z"
     }
-  ]
+  ],
+  "total": 46
 }
 ```
 
@@ -542,7 +553,7 @@ Create a custom exercise.
 **Validation**
 | Field | Rules |
 |---|---|
-| name | Required, 1–100 chars |
+| name | Required, 2–100 chars |
 | muscle_group | Required, one of: chest / back / shoulders / biceps / triceps / legs / core / cardio / full_body / other |
 
 **Response `201`**
@@ -566,41 +577,23 @@ Create a custom exercise.
 
 **Auth required:** Yes · **Query:** `skip` (0), `limit` (20, max 50)
 
+> The list endpoint returns lightweight summaries. Use `GET /workouts/{id}` for full exercise/set details.
+
 **Response `200`**
 ```json
 {
-  "items": [
+  "workouts": [
     {
       "id": "session-uuid",
       "session_date": "2025-01-15",
       "name": "Push Day",
-      "notes": "Felt strong today.",
       "is_shared": true,
       "exercise_count": 4,
       "total_sets": 16,
-      "total_volume_kg": 3240.0,
-      "exercises": [
-        {
-          "id": "workout-exercise-uuid",
-          "exercise": {
-            "id": "exercise-uuid",
-            "name": "Bench Press",
-            "muscle_group": "chest"
-          },
-          "order_index": 0,
-          "sets": [
-            { "set_number": 1, "reps": 10, "weight_kg": 60.0 },
-            { "set_number": 2, "reps": 8,  "weight_kg": 65.0 },
-            { "set_number": 3, "reps": 6,  "weight_kg": 70.0 }
-          ]
-        }
-      ],
       "created_at": "2025-01-15T10:30:00Z"
     }
   ],
-  "total": 42,
-  "skip": 0,
-  "limit": 20
+  "total": 42
 }
 ```
 
@@ -775,6 +768,80 @@ Soft delete.
 
 ---
 
+### `GET /nutrition/search`
+
+Search Open Food Facts for food items — returns pre-filled macro data. Powered by the Open Food Facts public API (no key required).
+
+**Auth required:** Yes
+
+**Query Params**
+| Param | Type | Default | Description |
+|---|---|---|---|
+| q | string | — | Required, 2–100 chars |
+| limit | int | 20 | Max 50 |
+
+**Response `200`**
+```json
+{
+  "items": [
+    {
+      "food_name": "Chicken Breast",
+      "calories": 165.0,
+      "protein_g": 31.0,
+      "carbs_g": 0.0,
+      "fat_g": 3.6,
+      "serving_size_g": 100.0,
+      "barcode": null
+    }
+  ],
+  "total": 8
+}
+```
+
+**Errors:** `502` Open Food Facts unreachable · `504` request timed out
+
+---
+
+### `GET /nutrition/recent`
+
+The requesting user's recently logged foods, ordered by most recently eaten.
+
+**Auth required:** Yes
+
+**Query Params**
+| Param | Type | Default | Description |
+|---|---|---|---|
+| limit | int | 20 | Max 50 |
+
+**Response `200`** — Array of recent food entries
+```json
+[
+  {
+    "food_name": "Oats with banana",
+    "meal_type": "breakfast",
+    "calories": 420.0,
+    "protein_g": 14.0,
+    "carbs_g": 72.0,
+    "fat_g": 8.0,
+    "last_eaten": "2025-01-15"
+  }
+]
+```
+
+---
+
+### `GET /nutrition/barcode/{barcode}`
+
+Look up a product by barcode (EAN-13, UPC-A, etc.).
+
+**Auth required:** Yes
+
+**Response `200`** — Same shape as a single item from `/nutrition/search`
+
+**Errors:** `404` barcode not found · `502` Open Food Facts unreachable · `504` timed out
+
+---
+
 ## Module 7 — Weight
 
 ---
@@ -843,7 +910,7 @@ Log or update today's weight (upsert by date).
 
 ### `DELETE /weight/{id}`
 
-Hard delete (no soft delete on weight logs).
+Soft delete — sets `deleted_at`. Allows re-logging the same date after deletion.
 
 **Auth required:** Yes
 
@@ -1175,7 +1242,7 @@ Soft delete — sets `deleted_at`. Comment disappears from feed responses.
 |---|---|---|---|
 | `DELETE /workouts/{id}` | DELETE | 204 | Sets `deleted_at` |
 | `DELETE /nutrition/{id}` | DELETE | 204 | Sets `deleted_at` |
-| `DELETE /weight/{id}` | DELETE | 204 | Hard delete |
+| `DELETE /weight/{id}` | DELETE | 204 | Sets `deleted_at` |
 | `DELETE /comments/{id}` | DELETE | 204 | Sets `deleted_at` |
 
 > Soft-deleted records are excluded from all GET responses automatically via repository-level filters.
