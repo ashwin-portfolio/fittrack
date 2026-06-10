@@ -30,6 +30,7 @@ import { Skeleton } from '@/components/ui/skeleton'
 import { useMyProfile, useUpdateProfile } from '@/hooks/useProfile'
 import { useAuthContext } from '@/lib/auth/context'
 import { profileEditSchema, type ProfileEditValues } from '@/lib/validators/profile'
+import type { Gender } from '@/types/profile'
 
 export function ProfileEditView() {
   const router = useRouter()
@@ -67,7 +68,7 @@ export function ProfileEditView() {
         full_name: values.full_name,
         bio: values.bio || undefined,
         age: values.age ?? undefined,
-        gender: (values.gender as any) ?? undefined,
+        gender: (values.gender as Gender) ?? undefined,
         height_cm: values.height_cm ?? undefined,
         is_public: values.is_public,
       },
