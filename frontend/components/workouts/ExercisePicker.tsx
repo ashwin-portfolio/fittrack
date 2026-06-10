@@ -170,14 +170,16 @@ export function ExercisePicker({ open, onOpenChange, onSelect }: ExercisePickerP
               ) : exercises.length === 0 ? (
                 <div className="py-10 text-center space-y-3">
                   <p className="text-sm text-muted-foreground">No exercises found.</p>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => setShowCreate(true)}
-                  >
-                    <Plus className="h-4 w-4 mr-1" />
-                    Create &quot;{search}&quot;
-                  </Button>
+                  {search.trim() && (
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => { setNewName(search.trim()); setShowCreate(true) }}
+                    >
+                      <Plus className="h-4 w-4 mr-1" />
+                      Create &quot;{search}&quot;
+                    </Button>
+                  )}
                 </div>
               ) : (
                 exercises.map((exercise) => (
