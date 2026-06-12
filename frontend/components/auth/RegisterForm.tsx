@@ -146,7 +146,7 @@ export function RegisterForm() {
                     <div className="relative">
                       <Input
                         type={showPassword ? 'text' : 'password'}
-                        placeholder="Min. 8 characters"
+                        placeholder=""
                         autoComplete="new-password"
                         disabled={isSubmitting}
                         {...field}
