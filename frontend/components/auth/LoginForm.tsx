@@ -95,7 +95,7 @@ export function LoginForm({ defaultRedirect = '/dashboard' }: LoginFormProps) {
                     <div className="relative">
                       <Input
                         type={showPassword ? 'text' : 'password'}
-                        placeholder="••••••••"
+                        placeholder=""
                         autoComplete="current-password"
                         disabled={form.formState.isSubmitting}
                         {...field}
