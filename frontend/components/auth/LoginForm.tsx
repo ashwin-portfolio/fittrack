@@ -71,7 +71,7 @@ export function LoginForm({ defaultRedirect = '/dashboard' }: LoginFormProps) {
                   <FormLabel>Email or username</FormLabel>
                   <FormControl>
                     <Input
-                      placeholder="you@example.com or your_username"
+                      placeholder=""
                       autoComplete="username email"
                       autoCapitalize="none"
                       autoCorrect="off"
