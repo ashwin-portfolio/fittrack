@@ -82,7 +82,7 @@ export function RegisterForm() {
                   <FormLabel>Display name</FormLabel>
                   <FormControl>
                     <Input
-                      placeholder="Ashwin Radhakrishnan"
+                      placeholder="Jane Doe"
                       autoComplete="name"
                       autoFocus
                       disabled={isSubmitting}
@@ -102,7 +102,7 @@ export function RegisterForm() {
                   <FormLabel>Username</FormLabel>
                   <FormControl>
                     <Input
-                      placeholder="ashwin_r"
+                      placeholder="jane_doe"
                       autoComplete="username"
                       disabled={isSubmitting}
                       {...field}
