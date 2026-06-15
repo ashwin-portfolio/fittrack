@@ -1,3 +1,4 @@
+import sentry_sdk
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from slowapi import _rate_limit_exceeded_handler
@@ -7,6 +8,15 @@ import app.db.base  # noqa: F401 — registers all ORM models before mapper conf
 
 from app.core.config import settings
 from app.core.limiter import limiter
+
+if settings.SENTRY_DSN:
+    sentry_sdk.init(
+        dsn=settings.SENTRY_DSN,
+        environment=settings.ENVIRONMENT,
+        traces_sample_rate=0.1,
+        profiles_sample_rate=0.0,
+        send_default_pii=False,
+    )
 
 app = FastAPI(
     title="FitTrack API",
