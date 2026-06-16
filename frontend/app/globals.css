@@ -63,9 +63,10 @@
     scroll-behavior: smooth;
   }
 
-  /* Hide browser-native password reveal/clear buttons (Edge Chromium) */
-  ::-ms-reveal,
-  ::-ms-clear {
-    display: none;
-  }
+}
+
+/* Outside @layer so it wins over browser defaults — hides Edge native password eye */
+::-ms-reveal,
+::-ms-clear {
+  display: none;
 }

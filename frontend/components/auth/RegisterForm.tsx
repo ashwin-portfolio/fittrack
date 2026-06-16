@@ -145,11 +145,12 @@ export function RegisterForm() {
                   <FormControl>
                     <div className="relative">
                       <Input
-                        type={showPassword ? 'text' : 'password'}
+                        type="text"
                         placeholder="Min. 8 characters"
                         autoComplete="new-password"
                         disabled={isSubmitting}
                         className="pr-10"
+                        style={!showPassword ? { WebkitTextSecurity: 'disc' } as React.CSSProperties : undefined}
                         {...field}
                       />
                       <button
@@ -177,11 +178,12 @@ export function RegisterForm() {
                   <FormControl>
                     <div className="relative">
                       <Input
-                        type={showConfirm ? 'text' : 'password'}
+                        type="text"
                         placeholder="••••••••"
                         autoComplete="new-password"
                         disabled={isSubmitting}
                         className="pr-10"
+                        style={!showConfirm ? { WebkitTextSecurity: 'disc' } as React.CSSProperties : undefined}
                         {...field}
                       />
                       <button

@@ -94,11 +94,12 @@ export function LoginForm({ defaultRedirect = '/dashboard' }: LoginFormProps) {
                   <FormControl>
                     <div className="relative">
                       <Input
-                        type={showPassword ? 'text' : 'password'}
+                        type="text"
                         placeholder=""
                         autoComplete="current-password"
                         disabled={form.formState.isSubmitting}
                         className="pr-10"
+                        style={!showPassword ? { WebkitTextSecurity: 'disc' } as React.CSSProperties : undefined}
                         {...field}
                       />
                       <button
