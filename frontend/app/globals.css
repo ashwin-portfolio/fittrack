@@ -63,9 +63,9 @@
     scroll-behavior: smooth;
   }
 
-  /* Hide browser-native password reveal button (Edge/Chrome) */
-  input[type="password"]::-ms-reveal,
-  input[type="password"]::-ms-clear {
+  /* Hide browser-native password reveal/clear buttons (Edge Chromium) */
+  ::-ms-reveal,
+  ::-ms-clear {
     display: none;
   }
 }
