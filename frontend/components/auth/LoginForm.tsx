@@ -98,6 +98,7 @@ export function LoginForm({ defaultRedirect = '/dashboard' }: LoginFormProps) {
                         placeholder=""
                         autoComplete="current-password"
                         disabled={form.formState.isSubmitting}
+                        className="pr-10"
                         {...field}
                       />
                       <button
@@ -105,7 +106,7 @@ export function LoginForm({ defaultRedirect = '/dashboard' }: LoginFormProps) {
                         tabIndex={-1}
                         onClick={() => setShowPassword((v) => !v)}
                         aria-label={showPassword ? 'Hide password' : 'Show password'}
-                        className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground transition-colors hover:text-foreground"
+                        className="absolute inset-y-0 right-0 flex items-center pr-3 text-muted-foreground transition-colors hover:text-foreground"
                       >
                         {showPassword
                           ? <EyeOff className="h-4 w-4" />

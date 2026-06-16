@@ -62,4 +62,10 @@
   html {
     scroll-behavior: smooth;
   }
+
+  /* Hide browser-native password reveal button (Edge/Chrome) */
+  input[type="password"]::-ms-reveal,
+  input[type="password"]::-ms-clear {
+    display: none;
+  }
 }
