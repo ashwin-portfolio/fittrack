@@ -143,22 +143,23 @@ export function RegisterForm() {
                 <FormItem>
                   <FormLabel>Password</FormLabel>
                   <FormControl>
-                    <div className="relative">
-                      <Input
+                    <div className="flex h-10 w-full rounded-md border border-input bg-background ring-offset-background focus-within:ring-2 focus-within:ring-ring focus-within:ring-offset-2">
+                      <input
                         type="text"
                         placeholder="Min. 8 characters"
                         autoComplete="new-password"
                         disabled={isSubmitting}
-                        className="pr-10"
                         style={!showPassword ? { WebkitTextSecurity: 'disc' } as React.CSSProperties : undefined}
+                        className="flex-1 min-w-0 bg-transparent pl-3 py-2 text-base md:text-sm placeholder:text-muted-foreground focus:outline-none disabled:cursor-not-allowed disabled:opacity-50"
                         {...field}
                       />
                       <button
                         type="button"
                         tabIndex={-1}
+                        disabled={isSubmitting}
                         onClick={() => setShowPassword((v) => !v)}
                         aria-label={showPassword ? 'Hide password' : 'Show password'}
-                        className="absolute inset-y-0 right-0 flex items-center pr-3 bg-background text-muted-foreground transition-colors hover:text-foreground z-10"
+                        className="flex-shrink-0 flex items-center pl-2 pr-3 text-muted-foreground transition-colors hover:text-foreground"
                       >
                         {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                       </button>
@@ -176,22 +177,23 @@ export function RegisterForm() {
                 <FormItem>
                   <FormLabel>Confirm password</FormLabel>
                   <FormControl>
-                    <div className="relative">
-                      <Input
+                    <div className="flex h-10 w-full rounded-md border border-input bg-background ring-offset-background focus-within:ring-2 focus-within:ring-ring focus-within:ring-offset-2">
+                      <input
                         type="text"
                         placeholder="••••••••"
                         autoComplete="new-password"
                         disabled={isSubmitting}
-                        className="pr-10"
                         style={!showConfirm ? { WebkitTextSecurity: 'disc' } as React.CSSProperties : undefined}
+                        className="flex-1 min-w-0 bg-transparent pl-3 py-2 text-base md:text-sm placeholder:text-muted-foreground focus:outline-none disabled:cursor-not-allowed disabled:opacity-50"
                         {...field}
                       />
                       <button
                         type="button"
                         tabIndex={-1}
+                        disabled={isSubmitting}
                         onClick={() => setShowConfirm((v) => !v)}
                         aria-label={showConfirm ? 'Hide password' : 'Show password'}
-                        className="absolute inset-y-0 right-0 flex items-center pr-3 bg-background text-muted-foreground transition-colors hover:text-foreground z-10"
+                        className="flex-shrink-0 flex items-center pl-2 pr-3 text-muted-foreground transition-colors hover:text-foreground"
                       >
                         {showConfirm ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                       </button>
