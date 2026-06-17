@@ -147,7 +147,7 @@ export function RegisterForm() {
                       <input
                         type="text"
                         placeholder="Min. 8 characters"
-                        autoComplete="new-password"
+                        autoComplete="off"
                         disabled={isSubmitting}
                         style={!showPassword ? { WebkitTextSecurity: 'disc' } as React.CSSProperties : undefined}
                         className="flex-1 min-w-0 bg-transparent pl-3 py-2 text-base md:text-sm placeholder:text-muted-foreground focus:outline-none disabled:cursor-not-allowed disabled:opacity-50"
@@ -181,7 +181,7 @@ export function RegisterForm() {
                       <input
                         type="text"
                         placeholder="••••••••"
-                        autoComplete="new-password"
+                        autoComplete="off"
                         disabled={isSubmitting}
                         style={!showConfirm ? { WebkitTextSecurity: 'disc' } as React.CSSProperties : undefined}
                         className="flex-1 min-w-0 bg-transparent pl-3 py-2 text-base md:text-sm placeholder:text-muted-foreground focus:outline-none disabled:cursor-not-allowed disabled:opacity-50"

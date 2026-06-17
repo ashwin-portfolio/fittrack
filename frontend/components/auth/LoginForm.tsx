@@ -95,7 +95,7 @@ export function LoginForm({ defaultRedirect = '/dashboard' }: LoginFormProps) {
                     <div className="flex h-10 w-full rounded-md border border-input bg-background ring-offset-background focus-within:ring-2 focus-within:ring-ring focus-within:ring-offset-2">
                       <input
                         type="text"
-                        autoComplete="current-password"
+                        autoComplete="off"
                         disabled={form.formState.isSubmitting}
                         style={!showPassword ? { WebkitTextSecurity: 'disc' } as React.CSSProperties : undefined}
                         className="flex-1 min-w-0 bg-transparent pl-3 py-2 text-base md:text-sm placeholder:text-muted-foreground focus:outline-none disabled:cursor-not-allowed disabled:opacity-50"
