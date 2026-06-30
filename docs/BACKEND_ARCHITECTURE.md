@@ -7,6 +7,14 @@
 
 ---
 
+## Revision History
+
+| Version | Date | Product Release | Summary |
+|---------|------|-----------------|---------|
+| 1.0 | 2025-01-15 | v1.0 MVP | Initial baseline — 4-layer architecture, repository pattern, Alembic migrations 0001–0003, batch social queries |
+
+---
+
 ## Folder Structure
 
 ```

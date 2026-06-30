@@ -6,6 +6,14 @@
 
 ---
 
+## Revision History
+
+| Version | Date | Product Release | Summary |
+|---------|------|-----------------|---------|
+| 2.1 | 2025-01-15 | v1.0 MVP | Initial baseline — full MVP requirements: auth, workouts, nutrition, weight, goals, dashboard, community, social, follows |
+
+---
+
 ## 1. Product Overview
 
 | Field | Detail |

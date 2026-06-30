@@ -6,6 +6,14 @@
 
 ---
 
+## Revision History
+
+| Version | Date | Product Release | Summary |
+|---------|------|-----------------|---------|
+| 1.0 | 2025-01-15 | v1.0 MVP | Initial baseline — 40 user stories across 8 epics with acceptance criteria and P1/P2/P3 priority |
+
+---
+
 ## Epic 1 — Authentication
 
 ---
