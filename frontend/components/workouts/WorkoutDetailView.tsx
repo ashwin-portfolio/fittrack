@@ -3,12 +3,13 @@
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
-import { ArrowLeft, Pencil, Share2, Trash2 } from 'lucide-react'
+import { ArrowLeft, BookTemplate, Pencil, Share2, Trash2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import { Skeleton } from '@/components/ui/skeleton'
 import { Badge } from '@/components/ui/badge'
 import { ConfirmDialog } from '@/components/shared/ConfirmDialog'
+import { SaveAsTemplateDialog } from '@/components/workouts/SaveAsTemplateDialog'
 import { useWorkout, useDeleteWorkout } from '@/hooks/useWorkouts'
 import { MUSCLE_GROUP_LABELS } from '@/lib/constants/workout'
 import { formatDate } from '@/lib/utils/format'
@@ -23,6 +24,7 @@ export function WorkoutDetailView({ workoutId }: WorkoutDetailViewProps) {
   const { data: workout, isLoading, isError } = useWorkout(workoutId)
   const deleteWorkout = useDeleteWorkout()
   const [deleteOpen, setDeleteOpen] = useState(false)
+  const [saveTemplateOpen, setSaveTemplateOpen] = useState(false)
 
   useEffect(() => {
     if (isError) router.replace('/workouts')
@@ -54,6 +56,15 @@ export function WorkoutDetailView({ workoutId }: WorkoutDetailViewProps) {
             {formatDate(workout.session_date)}
           </p>
         </div>
+        <Button
+          variant="ghost"
+          size="icon"
+          className="shrink-0"
+          title="Save as template"
+          onClick={() => setSaveTemplateOpen(true)}
+        >
+          <BookTemplate className="h-4 w-4" />
+        </Button>
         <Link href={`/workouts/${workoutId}/edit`}>
           <Button variant="ghost" size="icon" className="shrink-0">
             <Pencil className="h-4 w-4" />
@@ -125,6 +136,13 @@ export function WorkoutDetailView({ workoutId }: WorkoutDetailViewProps) {
           })
         }
         onCancel={() => setDeleteOpen(false)}
+      />
+
+      <SaveAsTemplateDialog
+        workoutId={workoutId}
+        defaultName={workout.name ?? ''}
+        open={saveTemplateOpen}
+        onOpenChange={setSaveTemplateOpen}
       />
     </div>
   )

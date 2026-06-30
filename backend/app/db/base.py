@@ -11,3 +11,4 @@ from app.models.social import Comment, Follow, Kudos  # noqa: F401
 from app.models.user import User  # noqa: F401
 from app.models.weight import WeightLog  # noqa: F401
 from app.models.workout import ExerciseSet, WorkoutExercise, WorkoutSession  # noqa: F401
+from app.models.template import WorkoutTemplate, TemplateExercise, TemplateSet  # noqa: F401
