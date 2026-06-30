@@ -1,9 +1,10 @@
 from __future__ import annotations
 
 import uuid
+from datetime import date
 from typing import TYPE_CHECKING
 
-from sqlalchemy import Boolean, Float, ForeignKey, Index, String, text
+from sqlalchemy import Boolean, Date, Float, ForeignKey, Index, SmallInteger, String, text
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.models.base import Base
@@ -33,8 +34,12 @@ class Goal(Base, TimestampMixin):
     )
     # Values: weight_loss / weight_gain / muscle_gain / maintenance (validated at app layer)
     goal_type: Mapped[str] = mapped_column(String(20))
-    # NULL when goal_type = maintenance
+    # NULL when goal_type = maintenance or workout_frequency
     target_weight_kg: Mapped[float | None] = mapped_column(Float)
+    # Optional deadline for weight/muscle goals
+    target_date: Mapped[date | None] = mapped_column(Date, nullable=True)
+    # Required when goal_type = workout_frequency
+    weekly_workout_target: Mapped[int | None] = mapped_column(SmallInteger, nullable=True)
     # Service layer deactivates all existing goals before activating a new one
     is_active: Mapped[bool] = mapped_column(Boolean, default=True)
 

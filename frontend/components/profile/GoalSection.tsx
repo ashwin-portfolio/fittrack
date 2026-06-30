@@ -25,6 +25,8 @@ import {
 import { useActiveGoal, useSetGoal } from '@/hooks/useGoals'
 import { goalSchema, GOAL_TYPE_OPTIONS, type GoalFormValues } from '@/lib/validators/goal'
 
+const WEIGHT_GOAL_TYPES = new Set(['weight_loss', 'weight_gain', 'muscle_gain'])
+
 export function GoalSection() {
   const { data: goal, isLoading } = useActiveGoal()
   const setGoal = useSetGoal()
@@ -34,24 +36,31 @@ export function GoalSection() {
     defaultValues: {
       goal_type: undefined,
       target_weight_kg: null,
+      target_date: null,
+      weekly_workout_target: null,
     },
   })
 
   const goalType = form.watch('goal_type')
-  const isMaintenance = goalType === 'maintenance'
+  const isWeightGoal = WEIGHT_GOAL_TYPES.has(goalType)
+  const isFrequency = goalType === 'workout_frequency'
 
   useEffect(() => {
     if (!goal) return
     form.reset({
       goal_type: goal.goal_type,
       target_weight_kg: goal.target_weight_kg ?? null,
+      target_date: goal.target_date ?? null,
+      weekly_workout_target: goal.weekly_workout_target ?? null,
     })
   }, [goal, form])
 
   function onSubmit(values: GoalFormValues) {
     setGoal.mutate({
       goal_type: values.goal_type,
-      target_weight_kg: isMaintenance ? undefined : (values.target_weight_kg ?? undefined),
+      target_weight_kg: isWeightGoal ? (values.target_weight_kg ?? undefined) : undefined,
+      target_date: isWeightGoal ? (values.target_date || null) : undefined,
+      weekly_workout_target: isFrequency ? (values.weekly_workout_target ?? undefined) : undefined,
     })
   }
 
@@ -69,6 +78,7 @@ export function GoalSection() {
 
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+            {/* Goal type */}
             <FormField
               control={form.control}
               name="goal_type"
@@ -94,7 +104,8 @@ export function GoalSection() {
               )}
             />
 
-            {!isMaintenance && (
+            {/* Target weight (weight/muscle goals only) */}
+            {isWeightGoal && (
               <FormField
                 control={form.control}
                 name="target_weight_kg"
@@ -120,11 +131,58 @@ export function GoalSection() {
               />
             )}
 
-            <Button
-              type="submit"
-              className="w-full"
-              disabled={setGoal.isPending}
-            >
+            {/* Target date (optional, weight/muscle goals only) */}
+            {isWeightGoal && (
+              <FormField
+                control={form.control}
+                name="target_date"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>
+                      Target Date{' '}
+                      <span className="text-xs font-normal text-muted-foreground">(optional)</span>
+                    </FormLabel>
+                    <FormControl>
+                      <Input
+                        type="date"
+                        value={field.value ?? ''}
+                        onChange={(e) => field.onChange(e.target.value || null)}
+                        min={new Date().toISOString().split('T')[0]}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            )}
+
+            {/* Weekly workout target (workout_frequency only) */}
+            {isFrequency && (
+              <FormField
+                control={form.control}
+                name="weekly_workout_target"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Workouts per Week</FormLabel>
+                    <FormControl>
+                      <Input
+                        type="number"
+                        min={1}
+                        max={7}
+                        placeholder="e.g. 4"
+                        value={field.value ?? ''}
+                        onChange={(e) =>
+                          field.onChange(e.target.value === '' ? null : Number(e.target.value))
+                        }
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            )}
+
+            <Button type="submit" className="w-full" disabled={setGoal.isPending}>
               {setGoal.isPending ? 'Saving…' : goal ? 'Update Goal' : 'Save Goal'}
             </Button>
           </form>

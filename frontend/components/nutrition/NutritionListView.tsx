@@ -2,12 +2,13 @@
 
 import { useState } from 'react'
 import Link from 'next/link'
-import { ChevronLeft, ChevronRight, Plus } from 'lucide-react'
+import { ChevronLeft, ChevronRight, Plus, Target } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Skeleton } from '@/components/ui/skeleton'
 import { NutritionDaySummary } from './NutritionDaySummary'
 import { MealSection } from './MealSection'
-import { useNutritionEntries, useDailySummary } from '@/hooks/useNutrition'
+import { SetCalorieGoalDialog } from './SetCalorieGoalDialog'
+import { useNutritionEntries, useDailySummary, useCalorieGoal } from '@/hooks/useNutrition'
 import type { MealType, NutritionEntry } from '@/types/nutrition'
 
 const MEAL_ORDER: MealType[] = ['breakfast', 'lunch', 'dinner', 'snack']
@@ -37,11 +38,13 @@ function formatDateLabel(dateStr: string): string {
 export function NutritionListView() {
   const today = dateToLocal(new Date())
   const [date, setDate] = useState(today)
+  const [goalOpen, setGoalOpen] = useState(false)
 
   const isToday = date === today
 
   const { data: entriesData, isLoading: loadingEntries } = useNutritionEntries(date)
   const { data: summary, isLoading: loadingSummary } = useDailySummary(date)
+  const { data: goal } = useCalorieGoal()
 
   const entries: NutritionEntry[] = entriesData?.items ?? []
 
@@ -62,12 +65,23 @@ export function NutritionListView() {
       {/* Header */}
       <div className="flex items-center justify-between gap-4">
         <h1 className="text-2xl font-bold tracking-tight">Nutrition</h1>
-        <Link href={`/nutrition/new?date=${date}`}>
-          <Button size="sm" className="gap-1.5">
-            <Plus className="h-4 w-4" />
-            Log Meal
+        <div className="flex items-center gap-2">
+          <Button
+            size="sm"
+            variant="outline"
+            onClick={() => setGoalOpen(true)}
+            aria-label="Set calorie goal"
+          >
+            <Target className="h-4 w-4 mr-1.5" />
+            {goal ? `${goal.daily_calories} kcal goal` : 'Set goal'}
           </Button>
-        </Link>
+          <Link href={`/nutrition/new?date=${date}`}>
+            <Button size="sm" className="gap-1.5">
+              <Plus className="h-4 w-4" />
+              Log Meal
+            </Button>
+          </Link>
+        </div>
       </div>
 
       {/* Date navigation */}
@@ -105,7 +119,7 @@ export function NutritionListView() {
       </div>
 
       {/* Daily summary */}
-      <NutritionDaySummary summary={summary} isLoading={loadingSummary} />
+      <NutritionDaySummary summary={summary} goal={goal} isLoading={loadingSummary} />
 
       {/* Meal sections */}
       {loadingEntries ? (
@@ -141,6 +155,8 @@ export function NutritionListView() {
           </Link>
         </div>
       )}
+
+      <SetCalorieGoalDialog open={goalOpen} onOpenChange={setGoalOpen} />
     </div>
   )
 }

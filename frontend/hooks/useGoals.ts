@@ -15,12 +15,21 @@ export function useActiveGoal() {
   })
 }
 
+export function useWorkoutProgress() {
+  return useQuery({
+    queryKey: ['goals', 'workout-progress'],
+    queryFn: goalsApi.getWorkoutProgress,
+    staleTime: 2 * 60 * 1000,
+  })
+}
+
 export function useSetGoal() {
   const queryClient = useQueryClient()
   return useMutation({
     mutationFn: (data: CreateGoalRequest) => goalsApi.create(data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.goals.active() })
+      queryClient.invalidateQueries({ queryKey: ['goals', 'workout-progress'] })
       queryClient.invalidateQueries({ queryKey: queryKeys.dashboard.summary() })
       toast.success('Goal saved')
     },

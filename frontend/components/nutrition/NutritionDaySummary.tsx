@@ -1,9 +1,10 @@
 import { Card, CardContent } from '@/components/ui/card'
 import { Skeleton } from '@/components/ui/skeleton'
-import type { DailySummary } from '@/types/nutrition'
+import type { CalorieGoal, DailySummary } from '@/types/nutrition'
 
 interface NutritionDaySummaryProps {
   summary?: DailySummary
+  goal?: CalorieGoal | null
   isLoading?: boolean
 }
 
@@ -24,7 +25,7 @@ function MacroPill({ label, value, color }: MacroPillProps) {
   )
 }
 
-export function NutritionDaySummary({ summary, isLoading }: NutritionDaySummaryProps) {
+export function NutritionDaySummary({ summary, goal, isLoading }: NutritionDaySummaryProps) {
   if (isLoading) {
     return (
       <Card>
@@ -53,9 +54,20 @@ export function NutritionDaySummary({ summary, isLoading }: NutritionDaySummaryP
   const carbs = summary?.total_carbs_g ?? 0
   const fat = summary?.total_fat_g ?? 0
 
+  const hasGoal = goal && goal.daily_calories > 0
+  const pct = hasGoal ? Math.min((calories / goal.daily_calories) * 100, 100) : 0
+  const remaining = hasGoal ? goal.daily_calories - Math.round(calories) : 0
+  const isOver = hasGoal && calories > goal.daily_calories
+
+  const barColor = isOver
+    ? 'bg-rose-500'
+    : pct >= 90
+      ? 'bg-amber-500'
+      : 'bg-emerald-500'
+
   return (
     <Card>
-      <CardContent className="p-4">
+      <CardContent className="p-4 space-y-3">
         <div className="flex items-center justify-between gap-4 flex-wrap">
           <div>
             <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
@@ -63,7 +75,14 @@ export function NutritionDaySummary({ summary, isLoading }: NutritionDaySummaryP
             </p>
             <p className="text-3xl font-bold tabular-nums">
               {Math.round(calories).toLocaleString()}
-              <span className="text-base font-normal text-muted-foreground ml-1">kcal</span>
+              {hasGoal && (
+                <span className="text-base font-normal text-muted-foreground ml-1">
+                  / {goal.daily_calories.toLocaleString()} kcal
+                </span>
+              )}
+              {!hasGoal && (
+                <span className="text-base font-normal text-muted-foreground ml-1">kcal</span>
+              )}
             </p>
           </div>
           <div className="flex gap-6">
@@ -72,6 +91,22 @@ export function NutritionDaySummary({ summary, isLoading }: NutritionDaySummaryP
             <MacroPill label="Fat" value={fat} color="text-rose-500" />
           </div>
         </div>
+
+        {hasGoal && (
+          <div className="space-y-1">
+            <div className="h-2 w-full rounded-full bg-muted overflow-hidden">
+              <div
+                className={`h-full rounded-full transition-all ${barColor}`}
+                style={{ width: `${pct}%` }}
+              />
+            </div>
+            <p className="text-xs text-muted-foreground tabular-nums">
+              {isOver
+                ? `${Math.abs(remaining).toLocaleString()} kcal over goal`
+                : `${remaining.toLocaleString()} kcal remaining`}
+            </p>
+          </div>
+        )}
       </CardContent>
     </Card>
   )

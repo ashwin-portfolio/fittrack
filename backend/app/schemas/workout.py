@@ -3,6 +3,8 @@ from __future__ import annotations
 import uuid
 from datetime import date, datetime
 
+
+
 from pydantic import BaseModel, Field
 
 
@@ -70,4 +72,50 @@ class WorkoutSummary(BaseModel):
 
 class WorkoutListResponse(BaseModel):
     workouts: list[WorkoutSummary]
+    total: int
+
+
+# ── Exercise History ──────────────────────────────────────────────────────────
+
+class LoggedExercise(BaseModel):
+    exercise_id: uuid.UUID
+    exercise_name: str
+    muscle_group: str
+    session_count: int
+
+
+class LoggedExercisesResponse(BaseModel):
+    exercises: list[LoggedExercise]
+    total: int
+
+
+class ExerciseHistoryEntry(BaseModel):
+    session_date: date
+    max_weight_kg: float
+    total_sets: int
+    total_reps: int
+    total_volume_kg: float
+
+
+class ExerciseHistoryResponse(BaseModel):
+    exercise_id: uuid.UUID
+    exercise_name: str
+    muscle_group: str
+    entries: list[ExerciseHistoryEntry]
+    total_sessions: int
+
+
+# ── Personal Records ──────────────────────────────────────────────────────────
+
+class PersonalRecord(BaseModel):
+    exercise_id: uuid.UUID
+    exercise_name: str
+    muscle_group: str
+    max_weight_kg: float
+    achieved_on: date
+    times_performed: int
+
+
+class PersonalRecordsResponse(BaseModel):
+    records: list[PersonalRecord]
     total: int

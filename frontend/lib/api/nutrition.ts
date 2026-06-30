@@ -1,5 +1,7 @@
+import axios from 'axios'
 import { apiClient } from '@/lib/api/client'
 import type {
+  CalorieGoal,
   DailySummary,
   FoodSearchListResponse,
   NutritionCreateRequest,
@@ -41,5 +43,20 @@ export const nutritionApi = {
 
   delete: async (id: string): Promise<void> => {
     await apiClient.delete(`/nutrition/${id}`)
+  },
+
+  getCalorieGoal: async (): Promise<CalorieGoal | null> => {
+    try {
+      const res = await apiClient.get<CalorieGoal>('/nutrition/calorie-goal')
+      return res.data
+    } catch (error) {
+      if (axios.isAxiosError(error) && error.response?.status === 404) return null
+      throw error
+    }
+  },
+
+  setCalorieGoal: async (daily_calories: number): Promise<CalorieGoal> => {
+    const res = await apiClient.put<CalorieGoal>('/nutrition/calorie-goal', { daily_calories })
+    return res.data
   },
 }

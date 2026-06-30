@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import uuid
+from datetime import date
 
 from sqlalchemy import select, update
 from sqlalchemy.orm import Session
@@ -31,11 +32,15 @@ class GoalRepository:
         user_id: uuid.UUID,
         goal_type: str,
         target_weight_kg: float | None,
+        target_date: date | None = None,
+        weekly_workout_target: int | None = None,
     ) -> Goal:
         goal = Goal(
             user_id=user_id,
             goal_type=goal_type,
             target_weight_kg=target_weight_kg,
+            target_date=target_date,
+            weekly_workout_target=weekly_workout_target,
             is_active=True,
         )
         db.add(goal)
