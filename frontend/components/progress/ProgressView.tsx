@@ -9,6 +9,7 @@ import { WeightHistoryChart } from '@/components/progress/WeightHistoryChart'
 import { WeightHistoryList } from '@/components/progress/WeightHistoryList'
 import { LogWeightDialog } from '@/components/progress/LogWeightDialog'
 import { PersonalRecordsCard } from '@/components/progress/PersonalRecordsCard'
+import { ExerciseProgressionChart } from '@/components/progress/ExerciseProgressionChart'
 import { useWeightHistory } from '@/hooks/useWeight'
 
 export function ProgressView() {
@@ -31,6 +32,7 @@ export function ProgressView() {
       <WeightStatsCards history={data} isLoading={isLoading} />
       <WeightHistoryChart />
       <WeightHistoryList />
+      <ExerciseProgressionChart />
       <PersonalRecordsCard />
 
       <LogWeightDialog open={logOpen} onOpenChange={setLogOpen} />

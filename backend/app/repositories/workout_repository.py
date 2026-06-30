@@ -156,4 +156,50 @@ class WorkoutRepository:
         return [dict(r) for r in rows]
 
 
+    def get_logged_exercises(self, db: Session, user_id: uuid.UUID) -> list[dict]:
+        sql = text("""
+            SELECT
+                e.id           AS exercise_id,
+                e.name         AS exercise_name,
+                e.muscle_group,
+                COUNT(DISTINCT ws.id) AS session_count
+            FROM exercises e
+            JOIN workout_exercises we ON we.exercise_id = e.id
+            JOIN workout_sessions  ws ON ws.id = we.session_id
+            WHERE ws.user_id    = :user_id
+              AND ws.deleted_at IS NULL
+            GROUP BY e.id, e.name, e.muscle_group
+            ORDER BY session_count DESC, e.name ASC
+        """)
+        rows = db.execute(sql, {"user_id": str(user_id)}).mappings().all()
+        return [dict(r) for r in rows]
+
+    def get_exercise_history(
+        self, db: Session, user_id: uuid.UUID, exercise_id: uuid.UUID
+    ) -> list[dict]:
+        sql = text("""
+            SELECT
+                ws.session_date,
+                MAX(es.weight_kg)              AS max_weight_kg,
+                COUNT(DISTINCT es.id)          AS total_sets,
+                CAST(SUM(es.reps) AS INTEGER)  AS total_reps,
+                SUM(es.weight_kg * es.reps)    AS total_volume_kg,
+                e.name                         AS exercise_name,
+                e.muscle_group
+            FROM workout_sessions  ws
+            JOIN workout_exercises we ON we.session_id    = ws.id
+                                     AND we.exercise_id  = :exercise_id
+            JOIN exercise_sets    es ON es.workout_exercise_id = we.id
+            JOIN exercises         e ON e.id              = we.exercise_id
+            WHERE ws.user_id    = :user_id
+              AND ws.deleted_at IS NULL
+            GROUP BY ws.session_date, e.name, e.muscle_group
+            ORDER BY ws.session_date ASC
+        """)
+        rows = db.execute(
+            sql, {"user_id": str(user_id), "exercise_id": str(exercise_id)}
+        ).mappings().all()
+        return [dict(r) for r in rows]
+
+
 workout_repo = WorkoutRepository()

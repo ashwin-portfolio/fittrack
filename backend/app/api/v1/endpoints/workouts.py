@@ -6,7 +6,14 @@ from sqlalchemy.orm import Session
 from app.api.deps import get_current_active_user, get_db
 from app.models.user import User
 from app.schemas.template import SaveAsTemplateRequest, TemplateResponse
-from app.schemas.workout import WorkoutCreateRequest, WorkoutListResponse, WorkoutResponse, PersonalRecordsResponse
+from app.schemas.workout import (
+    ExerciseHistoryResponse,
+    LoggedExercisesResponse,
+    PersonalRecordsResponse,
+    WorkoutCreateRequest,
+    WorkoutListResponse,
+    WorkoutResponse,
+)
 from app.services.template_service import template_service
 from app.services.workout_service import workout_service
 
@@ -38,6 +45,23 @@ def get_personal_records(
     current_user: User = Depends(get_current_active_user),
 ):
     return workout_service.personal_records(db, current_user)
+
+
+@router.get("/logged-exercises", response_model=LoggedExercisesResponse)
+def get_logged_exercises(
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_active_user),
+):
+    return workout_service.logged_exercises(db, current_user)
+
+
+@router.get("/exercise-history/{exercise_id}", response_model=ExerciseHistoryResponse)
+def get_exercise_history(
+    exercise_id: uuid.UUID,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_active_user),
+):
+    return workout_service.exercise_history(db, current_user, exercise_id)
 
 
 @router.get("/{workout_id}", response_model=WorkoutResponse)

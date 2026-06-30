@@ -11,7 +11,11 @@ from app.repositories.exercise_repository import exercise_repo
 from app.repositories.feed_repository import feed_repo
 from app.repositories.workout_repository import workout_repo
 from app.schemas.workout import (
+    ExerciseHistoryEntry,
+    ExerciseHistoryResponse,
     ExerciseSetResponse,
+    LoggedExercise,
+    LoggedExercisesResponse,
     PersonalRecord,
     PersonalRecordsResponse,
     WorkoutCreateRequest,
@@ -209,6 +213,49 @@ class WorkoutService:
         _check_ownership(session, current_user.id)
         feed_repo.soft_delete_by_workout(db, session.id)  # type: ignore[union-attr]
         workout_repo.hard_delete(db, session)  # type: ignore[arg-type]
+
+    def logged_exercises(self, db: Session, current_user: User) -> LoggedExercisesResponse:
+        rows = workout_repo.get_logged_exercises(db, current_user.id)
+        exercises = [
+            LoggedExercise(
+                exercise_id=row["exercise_id"],
+                exercise_name=row["exercise_name"],
+                muscle_group=row["muscle_group"],
+                session_count=row["session_count"],
+            )
+            for row in rows
+        ]
+        return LoggedExercisesResponse(exercises=exercises, total=len(exercises))
+
+    def exercise_history(
+        self, db: Session, current_user: User, exercise_id: uuid.UUID
+    ) -> ExerciseHistoryResponse:
+        rows = workout_repo.get_exercise_history(db, current_user.id, exercise_id)
+        if not rows:
+            return ExerciseHistoryResponse(
+                exercise_id=exercise_id,
+                exercise_name="",
+                muscle_group="",
+                entries=[],
+                total_sessions=0,
+            )
+        entries = [
+            ExerciseHistoryEntry(
+                session_date=row["session_date"],
+                max_weight_kg=row["max_weight_kg"],
+                total_sets=row["total_sets"],
+                total_reps=row["total_reps"],
+                total_volume_kg=row["total_volume_kg"],
+            )
+            for row in rows
+        ]
+        return ExerciseHistoryResponse(
+            exercise_id=exercise_id,
+            exercise_name=rows[0]["exercise_name"],
+            muscle_group=rows[0]["muscle_group"],
+            entries=entries,
+            total_sessions=len(entries),
+        )
 
     def personal_records(self, db: Session, current_user: User) -> PersonalRecordsResponse:
         rows = workout_repo.get_personal_records(db, current_user.id)

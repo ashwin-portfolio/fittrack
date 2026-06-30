@@ -69,6 +69,23 @@ export function useDeleteWorkout() {
   })
 }
 
+export function useLoggedExercises() {
+  return useQuery({
+    queryKey: ['workouts', 'logged-exercises'],
+    queryFn: () => workoutsApi.getLoggedExercises(),
+    staleTime: 5 * 60 * 1000,
+  })
+}
+
+export function useExerciseHistory(exerciseId: string | null) {
+  return useQuery({
+    queryKey: ['workouts', 'exercise-history', exerciseId],
+    queryFn: () => workoutsApi.getExerciseHistory(exerciseId!),
+    staleTime: 5 * 60 * 1000,
+    enabled: Boolean(exerciseId),
+  })
+}
+
 export function usePersonalRecords() {
   return useQuery({
     queryKey: ['workouts', 'personal-records'],

@@ -1,5 +1,7 @@
 import { apiClient } from '@/lib/api/client'
 import type {
+  ExerciseHistoryResponse,
+  LoggedExercisesResponse,
   PersonalRecordsResponse,
   WorkoutCreateRequest,
   WorkoutListResponse,
@@ -33,6 +35,16 @@ export const workoutsApi = {
 
   getPersonalRecords: async (): Promise<PersonalRecordsResponse> => {
     const res = await apiClient.get<PersonalRecordsResponse>('/workouts/personal-records')
+    return res.data
+  },
+
+  getLoggedExercises: async (): Promise<LoggedExercisesResponse> => {
+    const res = await apiClient.get<LoggedExercisesResponse>('/workouts/logged-exercises')
+    return res.data
+  },
+
+  getExerciseHistory: async (exerciseId: string): Promise<ExerciseHistoryResponse> => {
+    const res = await apiClient.get<ExerciseHistoryResponse>(`/workouts/exercise-history/${exerciseId}`)
     return res.data
   },
 }

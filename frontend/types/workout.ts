@@ -91,6 +91,34 @@ export interface WorkoutCreateRequest {
   exercises: WorkoutExerciseCreate[]
 }
 
+export interface LoggedExercise {
+  exercise_id: string
+  exercise_name: string
+  muscle_group: string
+  session_count: number
+}
+
+export interface LoggedExercisesResponse {
+  exercises: LoggedExercise[]
+  total: number
+}
+
+export interface ExerciseHistoryEntry {
+  session_date: string  // YYYY-MM-DD
+  max_weight_kg: number
+  total_sets: number
+  total_reps: number
+  total_volume_kg: number
+}
+
+export interface ExerciseHistoryResponse {
+  exercise_id: string
+  exercise_name: string
+  muscle_group: string
+  entries: ExerciseHistoryEntry[]
+  total_sessions: number
+}
+
 export interface PersonalRecord {
   exercise_id: string
   exercise_name: string

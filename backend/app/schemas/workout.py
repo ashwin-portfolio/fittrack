@@ -75,6 +75,36 @@ class WorkoutListResponse(BaseModel):
     total: int
 
 
+# ── Exercise History ──────────────────────────────────────────────────────────
+
+class LoggedExercise(BaseModel):
+    exercise_id: uuid.UUID
+    exercise_name: str
+    muscle_group: str
+    session_count: int
+
+
+class LoggedExercisesResponse(BaseModel):
+    exercises: list[LoggedExercise]
+    total: int
+
+
+class ExerciseHistoryEntry(BaseModel):
+    session_date: date
+    max_weight_kg: float
+    total_sets: int
+    total_reps: int
+    total_volume_kg: float
+
+
+class ExerciseHistoryResponse(BaseModel):
+    exercise_id: uuid.UUID
+    exercise_name: str
+    muscle_group: str
+    entries: list[ExerciseHistoryEntry]
+    total_sessions: int
+
+
 # ── Personal Records ──────────────────────────────────────────────────────────
 
 class PersonalRecord(BaseModel):
