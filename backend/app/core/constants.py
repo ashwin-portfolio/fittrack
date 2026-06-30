@@ -3,7 +3,7 @@ from typing import Literal
 # ── Domain type aliases ───────────────────────────────────────────────────────
 # Use these everywhere (schemas, services, validators) — never bare strings.
 
-GoalType = Literal["weight_loss", "weight_gain", "muscle_gain", "maintenance"]
+GoalType = Literal["weight_loss", "weight_gain", "muscle_gain", "maintenance", "workout_frequency"]
 
 MealType = Literal["breakfast", "lunch", "dinner", "snack"]
 

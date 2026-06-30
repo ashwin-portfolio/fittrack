@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import uuid
-from datetime import date
+from datetime import date, timedelta
 
 from sqlalchemy import func, select, text  # noqa: F401
 from sqlalchemy.orm import Session, selectinload
@@ -155,6 +155,21 @@ class WorkoutRepository:
         rows = db.execute(sql, {"user_id": str(user_id)}).mappings().all()
         return [dict(r) for r in rows]
 
+
+    def count_this_week(self, db: Session, user_id: uuid.UUID) -> int:
+        today = date.today()
+        monday = today - timedelta(days=today.weekday())
+        result = db.scalar(
+            select(func.count())
+            .select_from(WorkoutSession)
+            .where(
+                WorkoutSession.user_id == user_id,
+                WorkoutSession.session_date >= monday,
+                WorkoutSession.session_date <= today,
+                WorkoutSession.deleted_at.is_(None),
+            )
+        )
+        return result or 0
 
     def get_logged_exercises(self, db: Session, user_id: uuid.UUID) -> list[dict]:
         sql = text("""

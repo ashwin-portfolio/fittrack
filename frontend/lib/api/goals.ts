@@ -1,5 +1,5 @@
 import { apiClient } from '@/lib/api/client'
-import type { CreateGoalRequest, Goal } from '@/types/goal'
+import type { CreateGoalRequest, Goal, WorkoutProgressResponse } from '@/types/goal'
 
 export const goalsApi = {
   getActive: async (): Promise<Goal | null> => {
@@ -14,6 +14,11 @@ export const goalsApi = {
 
   create: async (data: CreateGoalRequest): Promise<Goal> => {
     const res = await apiClient.post<Goal>('/goals', data)
+    return res.data
+  },
+
+  getWorkoutProgress: async (): Promise<WorkoutProgressResponse> => {
+    const res = await apiClient.get<WorkoutProgressResponse>('/goals/workout-progress')
     return res.data
   },
 }
