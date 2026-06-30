@@ -6,31 +6,15 @@ import { Input } from '@/components/ui/input'
 import { useFoodSearch } from '@/hooks/useNutrition'
 import type { FoodSearchResult } from '@/types/nutrition'
 
-function calcFromSearch(food: FoodSearchResult) {
-  const w = food.serving_weight_g ?? 100
-  return {
-    food_name: food.food_name,
-    calories: Math.round(((food.calories_per_100g ?? 0) * w) / 100),
-    protein_g: food.protein_per_100g != null
-      ? parseFloat(((food.protein_per_100g * w) / 100).toFixed(1))
-      : null,
-    carbs_g: food.carbs_per_100g != null
-      ? parseFloat(((food.carbs_per_100g * w) / 100).toFixed(1))
-      : null,
-    fat_g: food.fat_per_100g != null
-      ? parseFloat(((food.fat_per_100g * w) / 100).toFixed(1))
-      : null,
-  }
-}
-
 interface FoodSearchInputProps {
   value: string
   onChange: (value: string) => void
-  onSelect: (result: ReturnType<typeof calcFromSearch>) => void
+  onSelect: (food: FoodSearchResult) => void
+  onClear?: () => void
   error?: boolean
 }
 
-export function FoodSearchInput({ value, onChange, onSelect, error }: FoodSearchInputProps) {
+export function FoodSearchInput({ value, onChange, onSelect, onClear, error }: FoodSearchInputProps) {
   const [query, setQuery] = useState(value)
   const [open, setOpen] = useState(false)
   const containerRef = useRef<HTMLDivElement>(null)
@@ -61,16 +45,16 @@ export function FoodSearchInput({ value, onChange, onSelect, error }: FoodSearch
   }
 
   function handleSelect(food: FoodSearchResult) {
-    const calc = calcFromSearch(food)
-    setQuery(calc.food_name)
-    onChange(calc.food_name)
-    onSelect(calc)
+    setQuery(food.food_name)
+    onChange(food.food_name)
+    onSelect(food)
     setOpen(false)
   }
 
   function handleClear() {
     setQuery('')
     onChange('')
+    onClear?.()
     setOpen(false)
   }
 
