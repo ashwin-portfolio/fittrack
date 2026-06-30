@@ -33,6 +33,7 @@ class User(Base, TimestampMixin):
     username: Mapped[str] = mapped_column(String(20))
     hashed_password: Mapped[str] = mapped_column(String(255))
     is_active: Mapped[bool] = mapped_column(Boolean, default=True)
+    is_email_verified: Mapped[bool] = mapped_column(Boolean, default=False)
 
     # ── Relationships ────────────────────────────────────────────────────────
     profile: Mapped[Profile] = relationship(

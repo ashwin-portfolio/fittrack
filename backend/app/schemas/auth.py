@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import uuid
 
-from pydantic import BaseModel, EmailStr, Field, field_validator
+from pydantic import BaseModel, EmailStr, Field, field_validator, model_validator
 
 
 class RegisterRequest(BaseModel):
@@ -32,14 +32,35 @@ class LogoutRequest(BaseModel):
     refresh_token: str
 
 
+class ForgotPasswordRequest(BaseModel):
+    email: EmailStr
+
+
+class ResetPasswordRequest(BaseModel):
+    token: str
+    new_password: str = Field(min_length=8, max_length=128)
+    confirm_password: str
+
+    @model_validator(mode="after")
+    def passwords_match(self) -> "ResetPasswordRequest":
+        if self.new_password != self.confirm_password:
+            raise ValueError("Passwords do not match")
+        return self
+
+
 # ── Responses ─────────────────────────────────────────────────────────────────
 
 class UserPublic(BaseModel):
     id: uuid.UUID
     email: str
     username: str
+    is_email_verified: bool = False
 
     model_config = {"from_attributes": True}
+
+
+class MessageResponse(BaseModel):
+    message: str
 
 
 class TokenResponse(BaseModel):

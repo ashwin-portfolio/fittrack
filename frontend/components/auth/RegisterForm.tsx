@@ -4,8 +4,7 @@ import { useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import Link from 'next/link'
-import { useRouter } from 'next/navigation'
-import { Eye, EyeOff, Loader2 } from 'lucide-react'
+import { Eye, EyeOff, Loader2, MailCheck } from 'lucide-react'
 
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -27,8 +26,8 @@ import { registerSchema, type RegisterFormValues } from '@/lib/utils/validators'
 export function RegisterForm() {
   const [showPassword, setShowPassword] = useState(false)
   const [showConfirm, setShowConfirm] = useState(false)
+  const [registeredEmail, setRegisteredEmail] = useState<string | null>(null)
   const { register } = useAuthContext()
-  const router = useRouter()
 
   const form = useForm<RegisterFormValues>({
     resolver: zodResolver(registerSchema),
@@ -49,13 +48,34 @@ export function RegisterForm() {
         email: values.email,
         password: values.password,
       })
-      router.replace('/dashboard')
+      setRegisteredEmail(values.email)
     } catch (error) {
       form.setError('root', { message: getApiErrorMessage(error) })
     }
   }
 
   const isSubmitting = form.formState.isSubmitting
+
+  if (registeredEmail) {
+    return (
+      <Card>
+        <CardHeader className="space-y-1 text-center">
+          <div className="flex justify-center mb-2">
+            <MailCheck className="h-10 w-10 text-primary" />
+          </div>
+          <CardTitle className="text-2xl font-bold">Account created!</CardTitle>
+          <CardDescription>
+            We sent a verification link to <strong>{registeredEmail}</strong>. Click it to verify your email address.
+          </CardDescription>
+        </CardHeader>
+        <CardFooter className="justify-center border-t pt-4">
+          <Link href="/dashboard" className="text-sm font-medium text-primary underline-offset-4 hover:underline">
+            Continue to dashboard
+          </Link>
+        </CardFooter>
+      </Card>
+    )
+  }
 
   return (
     <Card>

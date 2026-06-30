@@ -35,5 +35,13 @@ class UserRepository:
         db.flush()  # populate user.id before returning
         return user
 
+    def update_password(self, db: Session, user: User, hashed_password: str) -> None:
+        user.hashed_password = hashed_password
+        db.flush()
+
+    def set_email_verified(self, db: Session, user: User) -> None:
+        user.is_email_verified = True
+        db.flush()
+
 
 user_repo = UserRepository()

@@ -13,16 +13,21 @@ from app.core.security import (
     verify_password,
 )
 from app.core.config import settings
+from app.core.email import send_password_reset_email, send_verification_email
 from app.models.user import User
+from app.repositories.auth_token_repository import auth_token_repo
 from app.repositories.profile_repository import profile_repo
 from app.repositories.refresh_token_repository import refresh_token_repo
 from app.repositories.user_repository import user_repo
 from app.schemas.auth import (
     AccessTokenResponse,
+    ForgotPasswordRequest,
     LoginRequest,
     LogoutResponse,
+    MessageResponse,
     RegisterRequest,
     RegisterResponse,
+    ResetPasswordRequest,
     TokenResponse,
     UserPublic,
 )
@@ -47,10 +52,12 @@ class AuthService:
             full_name=body.display_name,
             username=body.username,
         )
-        # No explicit db.commit() — get_db() commits after the route returns.
+        # Send verification email — token is flushed to DB before email is sent.
+        # If email fails, the exception propagates and get_db() rolls back the transaction.
+        self._send_verification_email(db, user)
 
         return RegisterResponse(
-            message="Account created successfully",
+            message="Account created successfully. Check your email to verify your address.",
             user=UserPublic.model_validate(user),
         )
 
@@ -94,7 +101,49 @@ class AuthService:
         refresh_token_repo.revoke(db, token_hash)
         return LogoutResponse(message="Logged out successfully")
 
+    def forgot_password(self, db: Session, body: ForgotPasswordRequest) -> MessageResponse:
+        user = user_repo.get_by_email(db, body.email)
+        # Always return the same message to avoid revealing whether an email exists
+        if user and user.is_active:
+            token = auth_token_repo.create_token(db, user.id, "password_reset", timedelta(hours=1))
+            send_password_reset_email(user.email, token)
+        return MessageResponse(message="If your email is registered, you will receive a password reset link shortly.")
+
+    def reset_password(self, db: Session, body: ResetPasswordRequest) -> MessageResponse:
+        token_hash = hash_token(body.token)
+        auth_token = auth_token_repo.get_valid_token(db, token_hash, "password_reset")
+        if not auth_token:
+            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Reset link is invalid or has expired.")
+        user = user_repo.get_by_id(db, auth_token.user_id)
+        if not user:
+            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Reset link is invalid or has expired.")
+        user_repo.update_password(db, user, hash_password(body.new_password))
+        auth_token_repo.mark_used(db, auth_token)
+        return MessageResponse(message="Password updated successfully.")
+
+    def verify_email(self, db: Session, token: str) -> MessageResponse:
+        token_hash = hash_token(token)
+        auth_token = auth_token_repo.get_valid_token(db, token_hash, "email_verification")
+        if not auth_token:
+            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Verification link is invalid or has expired.")
+        user = user_repo.get_by_id(db, auth_token.user_id)
+        if not user:
+            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Verification link is invalid or has expired.")
+        user_repo.set_email_verified(db, user)
+        auth_token_repo.mark_used(db, auth_token)
+        return MessageResponse(message="Email verified successfully.")
+
+    def resend_verification(self, db: Session, current_user: User) -> MessageResponse:
+        if current_user.is_email_verified:
+            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Email is already verified.")
+        self._send_verification_email(db, current_user)
+        return MessageResponse(message="Verification email sent.")
+
     # ── Helpers ───────────────────────────────────────────────────────────────
+
+    def _send_verification_email(self, db: Session, user: User) -> None:
+        token = auth_token_repo.create_token(db, user.id, "email_verification", timedelta(hours=24))
+        send_verification_email(user.email, token)
 
     def _issue_refresh_token(
         self, db: Session, user: User

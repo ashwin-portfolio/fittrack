@@ -22,6 +22,11 @@ class Settings(BaseSettings):
     # Food search
     USDA_FDC_API_KEY: str = "DEMO_KEY"
 
+    # Email (Resend)
+    RESEND_API_KEY: str | None = None
+    FROM_EMAIL: str = "FitTrack <onboarding@resend.dev>"
+    FRONTEND_URL: str = "http://localhost:3000"
+
     # Observability
     SENTRY_DSN: str | None = None
 

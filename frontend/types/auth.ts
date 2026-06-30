@@ -10,24 +10,23 @@ export interface RegisterRequest {
   display_name: string
 }
 
+export interface UserPublic {
+  id: string
+  email: string
+  username: string
+  is_email_verified: boolean
+}
+
 export interface RegisterResponse {
   message: string
-  user: {
-    id: string
-    email: string
-    username: string
-  }
+  user: UserPublic
 }
 
 export interface TokenResponse {
   access_token: string
   refresh_token: string
   token_type: string
-  user: {
-    id: string
-    email: string
-    username: string
-  }
+  user: UserPublic
 }
 
 export interface RefreshRequest {
@@ -42,4 +41,19 @@ export interface AuthUser {
   id: string
   username: string
   email: string
+  is_email_verified: boolean
+}
+
+export interface ForgotPasswordRequest {
+  email: string
+}
+
+export interface ResetPasswordRequest {
+  token: string
+  new_password: string
+  confirm_password: string
+}
+
+export interface MessageResponse {
+  message: string
 }
