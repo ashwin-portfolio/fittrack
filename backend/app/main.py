@@ -20,7 +20,7 @@ if settings.SENTRY_DSN:
 
 app = FastAPI(
     title="FitTrack API",
-    version="1.0.0",
+    version="1.1.0",
     docs_url="/docs" if settings.ENVIRONMENT != "production" else None,
     redoc_url="/redoc" if settings.ENVIRONMENT != "production" else None,
 )
@@ -58,4 +58,4 @@ app.include_router(api_router, prefix="/api/v1")
 
 @app.get("/health", tags=["health"])
 def health_check() -> dict[str, str]:
-    return {"status": "ok"}
+    return {"status": "ok", "version": "1.1.0"}
