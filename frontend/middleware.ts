@@ -11,6 +11,7 @@ const PROTECTED_PREFIXES = [
   '/progress',
   '/profile',
   '/community',
+  '/discover',
 ]
 
 function isProtected(pathname: string): boolean {

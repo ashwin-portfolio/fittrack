@@ -35,6 +35,7 @@ export function LoginForm({ defaultRedirect = '/dashboard' }: LoginFormProps) {
   const form = useForm<LoginFormValues>({
     resolver: zodResolver(loginSchema),
     defaultValues: { identifier: '', password: '' },
+    mode: 'onBlur',
   })
 
   async function onSubmit(values: LoginFormValues) {

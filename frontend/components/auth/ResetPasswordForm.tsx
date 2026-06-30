@@ -35,6 +35,7 @@ export function ResetPasswordForm({ token }: ResetPasswordFormProps) {
   const form = useForm<FormValues>({
     resolver: zodResolver(schema),
     defaultValues: { new_password: '', confirm_password: '' },
+    mode: 'onBlur',
   })
 
   async function onSubmit(values: FormValues) {

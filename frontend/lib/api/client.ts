@@ -71,8 +71,10 @@ apiClient.interceptors.response.use(
         { headers: { 'Content-Type': 'application/json' } },
       )
 
-      const { access_token, refresh_token } = data
-      setTokens(access_token, refresh_token)
+      const { access_token } = data
+      // Only the access token is returned — keep the existing refresh token
+      const existingRefreshToken = getRefreshToken()
+      if (existingRefreshToken) setTokens(access_token, existingRefreshToken)
       original.headers.Authorization = `Bearer ${access_token}`
       processQueue(null, access_token)
 
@@ -81,7 +83,8 @@ apiClient.interceptors.response.use(
       processQueue(refreshError, null)
       clearTokens()
       if (typeof window !== 'undefined') {
-        window.location.href = '/login'
+        const from = encodeURIComponent(window.location.pathname + window.location.search)
+        window.location.href = `/login?from=${from}`
       }
       return Promise.reject(refreshError)
     } finally {

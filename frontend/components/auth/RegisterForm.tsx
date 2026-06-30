@@ -38,6 +38,7 @@ export function RegisterForm() {
       password: '',
       confirm_password: '',
     },
+    mode: 'onBlur',
   })
 
   async function onSubmit(values: RegisterFormValues) {
