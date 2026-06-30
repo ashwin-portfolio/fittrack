@@ -1,5 +1,6 @@
 'use client'
 
+import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
@@ -25,7 +26,7 @@ import {
 import { FoodSearchInput } from './FoodSearchInput'
 import { nutritionFormSchema, type NutritionFormValues } from '@/lib/validators/nutrition'
 import { useLogMeal, useRecentFoods } from '@/hooks/useNutrition'
-import type { MealType, RecentFood } from '@/types/nutrition'
+import type { FoodSearchResult, MealType, RecentFood } from '@/types/nutrition'
 
 const MEAL_LABELS: Record<MealType, string> = {
   breakfast: 'Breakfast',
@@ -38,10 +39,29 @@ interface NewNutritionViewProps {
   defaultDate: string
 }
 
+function calcNutrition(food: FoodSearchResult, servings: number) {
+  const grams = (food.serving_weight_g ?? 100) * servings
+  return {
+    calories: Math.round(((food.calories_per_100g ?? 0) * grams) / 100),
+    protein_g: food.protein_per_100g != null
+      ? parseFloat(((food.protein_per_100g * grams) / 100).toFixed(1))
+      : null,
+    carbs_g: food.carbs_per_100g != null
+      ? parseFloat(((food.carbs_per_100g * grams) / 100).toFixed(1))
+      : null,
+    fat_g: food.fat_per_100g != null
+      ? parseFloat(((food.fat_per_100g * grams) / 100).toFixed(1))
+      : null,
+  }
+}
+
 export function NewNutritionView({ defaultDate }: NewNutritionViewProps) {
   const router = useRouter()
   const logMeal = useLogMeal()
   const { data: recentFoods } = useRecentFoods()
+
+  const [baseFood, setBaseFood] = useState<FoodSearchResult | null>(null)
+  const [servingCount, setServingCount] = useState(1)
 
   const form = useForm<NutritionFormValues>({
     resolver: zodResolver(nutritionFormSchema),
@@ -56,7 +76,39 @@ export function NewNutritionView({ defaultDate }: NewNutritionViewProps) {
     },
   })
 
+  // Clear quantity state when food name is cleared
+  const foodName = form.watch('food_name')
+  useEffect(() => {
+    if (!foodName) {
+      setBaseFood(null)
+      setServingCount(1)
+    }
+  }, [foodName])
+
+  function handleFoodSelect(food: FoodSearchResult) {
+    setBaseFood(food)
+    setServingCount(1)
+    const nutrition = calcNutrition(food, 1)
+    form.setValue('food_name', food.food_name, { shouldValidate: true })
+    form.setValue('calories', nutrition.calories, { shouldValidate: true })
+    form.setValue('protein_g', nutrition.protein_g)
+    form.setValue('carbs_g', nutrition.carbs_g)
+    form.setValue('fat_g', nutrition.fat_g)
+  }
+
+  function handleServingChange(val: number) {
+    if (!baseFood || isNaN(val) || val <= 0) return
+    setServingCount(val)
+    const nutrition = calcNutrition(baseFood, val)
+    form.setValue('calories', nutrition.calories, { shouldValidate: true })
+    form.setValue('protein_g', nutrition.protein_g)
+    form.setValue('carbs_g', nutrition.carbs_g)
+    form.setValue('fat_g', nutrition.fat_g)
+  }
+
   function applyRecentFood(food: RecentFood) {
+    setBaseFood(null)
+    setServingCount(1)
     form.setValue('food_name', food.food_name, { shouldValidate: true })
     form.setValue('calories', food.calories, { shouldValidate: true })
     form.setValue('protein_g', food.protein_g ?? null)
@@ -165,12 +217,10 @@ export function NewNutritionView({ defaultDate }: NewNutritionViewProps) {
                     value={field.value}
                     onChange={field.onChange}
                     error={Boolean(form.formState.errors.food_name)}
-                    onSelect={(result) => {
-                      form.setValue('food_name', result.food_name, { shouldValidate: true })
-                      form.setValue('calories', result.calories, { shouldValidate: true })
-                      form.setValue('protein_g', result.protein_g)
-                      form.setValue('carbs_g', result.carbs_g)
-                      form.setValue('fat_g', result.fat_g)
+                    onSelect={handleFoodSelect}
+                    onClear={() => {
+                      setBaseFood(null)
+                      setServingCount(1)
                     }}
                   />
                 </FormControl>
@@ -178,6 +228,35 @@ export function NewNutritionView({ defaultDate }: NewNutritionViewProps) {
               </FormItem>
             )}
           />
+
+          {/* Quantity — shown only when a food is selected from search */}
+          {baseFood && (
+            <div className="space-y-1.5">
+              <Label>Quantity</Label>
+              <div className="flex items-center gap-3">
+                <Input
+                  type="number"
+                  min={0.1}
+                  max={99}
+                  step={0.5}
+                  value={servingCount}
+                  onChange={(e) => handleServingChange(parseFloat(e.target.value))}
+                  className="w-24 shrink-0"
+                />
+                <div className="text-sm text-muted-foreground leading-snug">
+                  {baseFood.serving_description
+                    ? <>× {baseFood.serving_description}</>
+                    : <>serving{servingCount !== 1 ? 's' : ''}{baseFood.serving_weight_g ? ` · ${baseFood.serving_weight_g}g each` : ''}</>
+                  }
+                  {baseFood.serving_weight_g && (
+                    <span className="block text-xs mt-0.5">
+                      = {Math.round(servingCount * baseFood.serving_weight_g)}g total
+                    </span>
+                  )}
+                </div>
+              </div>
+            </div>
+          )}
 
           {/* Calories */}
           <FormField

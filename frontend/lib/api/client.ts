@@ -39,7 +39,11 @@ apiClient.interceptors.response.use(
   async (error) => {
     const original: InternalAxiosRequestConfig = error.config
 
-    if (error.response?.status !== 401 || original._retry) {
+    if (
+      error.response?.status !== 401 ||
+      original._retry ||
+      original.url?.includes('/auth/')
+    ) {
       return Promise.reject(error)
     }
 

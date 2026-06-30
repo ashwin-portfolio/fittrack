@@ -9,6 +9,14 @@
 
 ---
 
+## Revision History
+
+| Version | Date | Product Release | Summary |
+|---------|------|-----------------|---------|
+| 1.1 | 2025-01-15 | v1.0 MVP | Initial baseline — 12 endpoint groups including exercise library, soft delete endpoints, refresh token rotation |
+
+---
+
 ## Response Envelopes
 
 ### Single Resource

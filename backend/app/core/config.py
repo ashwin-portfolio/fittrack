@@ -22,6 +22,9 @@ class Settings(BaseSettings):
     # Food search
     USDA_FDC_API_KEY: str = "DEMO_KEY"
 
+    # Observability
+    SENTRY_DSN: str | None = None
+
     # App
     ENVIRONMENT: Literal["development", "production", "test"] = "development"
 

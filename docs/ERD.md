@@ -6,6 +6,14 @@
 
 ---
 
+## Revision History
+
+| Version | Date | Product Release | Summary |
+|---------|------|-----------------|---------|
+| 2.1 | 2025-01-15 | v1.0 MVP | Initial baseline — 13 tables, soft delete, partial unique indexes, exercise library, refresh tokens |
+
+---
+
 ## Entity Relationship Diagram
 
 ```

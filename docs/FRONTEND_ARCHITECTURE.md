@@ -8,6 +8,14 @@
 
 ---
 
+## Revision History
+
+| Version | Date | Product Release | Summary |
+|---------|------|-----------------|---------|
+| 1.0 | 2025-01-15 | v1.0 MVP | Initial baseline — Next.js 15 App Router, TanStack Query v5, ShadCN UI, mobile bottom nav, auth context |
+
+---
+
 ## Folder Structure
 
 ```

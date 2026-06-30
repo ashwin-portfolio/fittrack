@@ -62,4 +62,11 @@
   html {
     scroll-behavior: smooth;
   }
+
+}
+
+/* Outside @layer so it wins over browser defaults — hides Edge native password eye */
+::-ms-reveal,
+::-ms-clear {
+  display: none;
 }
