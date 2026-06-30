@@ -6,7 +6,7 @@ from sqlalchemy.orm import Session
 from app.api.deps import get_current_active_user, get_db
 from app.models.user import User
 from app.schemas.template import SaveAsTemplateRequest, TemplateResponse
-from app.schemas.workout import WorkoutCreateRequest, WorkoutListResponse, WorkoutResponse
+from app.schemas.workout import WorkoutCreateRequest, WorkoutListResponse, WorkoutResponse, PersonalRecordsResponse
 from app.services.template_service import template_service
 from app.services.workout_service import workout_service
 
@@ -30,6 +30,14 @@ def list_workouts(
     current_user: User = Depends(get_current_active_user),
 ):
     return workout_service.list_workouts(db, current_user, limit=limit, offset=offset)
+
+
+@router.get("/personal-records", response_model=PersonalRecordsResponse)
+def get_personal_records(
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_active_user),
+):
+    return workout_service.personal_records(db, current_user)
 
 
 @router.get("/{workout_id}", response_model=WorkoutResponse)

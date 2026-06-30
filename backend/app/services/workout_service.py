@@ -12,6 +12,8 @@ from app.repositories.feed_repository import feed_repo
 from app.repositories.workout_repository import workout_repo
 from app.schemas.workout import (
     ExerciseSetResponse,
+    PersonalRecord,
+    PersonalRecordsResponse,
     WorkoutCreateRequest,
     WorkoutExerciseResponse,
     WorkoutListResponse,
@@ -207,6 +209,21 @@ class WorkoutService:
         _check_ownership(session, current_user.id)
         feed_repo.soft_delete_by_workout(db, session.id)  # type: ignore[union-attr]
         workout_repo.hard_delete(db, session)  # type: ignore[arg-type]
+
+    def personal_records(self, db: Session, current_user: User) -> PersonalRecordsResponse:
+        rows = workout_repo.get_personal_records(db, current_user.id)
+        records = [
+            PersonalRecord(
+                exercise_id=row["exercise_id"],
+                exercise_name=row["exercise_name"],
+                muscle_group=row["muscle_group"],
+                max_weight_kg=row["max_weight_kg"],
+                achieved_on=row["achieved_on"],
+                times_performed=row["times_performed"],
+            )
+            for row in rows
+        ]
+        return PersonalRecordsResponse(records=records, total=len(records))
 
 
 workout_service = WorkoutService()

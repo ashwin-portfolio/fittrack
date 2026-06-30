@@ -3,6 +3,8 @@ from __future__ import annotations
 import uuid
 from datetime import date, datetime
 
+
+
 from pydantic import BaseModel, Field
 
 
@@ -70,4 +72,20 @@ class WorkoutSummary(BaseModel):
 
 class WorkoutListResponse(BaseModel):
     workouts: list[WorkoutSummary]
+    total: int
+
+
+# ── Personal Records ──────────────────────────────────────────────────────────
+
+class PersonalRecord(BaseModel):
+    exercise_id: uuid.UUID
+    exercise_name: str
+    muscle_group: str
+    max_weight_kg: float
+    achieved_on: date
+    times_performed: int
+
+
+class PersonalRecordsResponse(BaseModel):
+    records: list[PersonalRecord]
     total: int

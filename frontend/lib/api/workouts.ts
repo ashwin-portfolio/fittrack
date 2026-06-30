@@ -1,5 +1,6 @@
 import { apiClient } from '@/lib/api/client'
 import type {
+  PersonalRecordsResponse,
   WorkoutCreateRequest,
   WorkoutListResponse,
   WorkoutResponse,
@@ -28,5 +29,10 @@ export const workoutsApi = {
 
   delete: async (id: string): Promise<void> => {
     await apiClient.delete(`/workouts/${id}`)
+  },
+
+  getPersonalRecords: async (): Promise<PersonalRecordsResponse> => {
+    const res = await apiClient.get<PersonalRecordsResponse>('/workouts/personal-records')
+    return res.data
   },
 }

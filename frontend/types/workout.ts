@@ -90,3 +90,17 @@ export interface WorkoutCreateRequest {
   is_shared?: boolean
   exercises: WorkoutExerciseCreate[]
 }
+
+export interface PersonalRecord {
+  exercise_id: string
+  exercise_name: string
+  muscle_group: string
+  max_weight_kg: number
+  achieved_on: string   // YYYY-MM-DD
+  times_performed: number
+}
+
+export interface PersonalRecordsResponse {
+  records: PersonalRecord[]
+  total: number
+}

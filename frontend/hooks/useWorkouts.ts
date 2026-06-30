@@ -68,3 +68,11 @@ export function useDeleteWorkout() {
     onError: (error) => toast.error(getApiErrorMessage(error)),
   })
 }
+
+export function usePersonalRecords() {
+  return useQuery({
+    queryKey: ['workouts', 'personal-records'],
+    queryFn: () => workoutsApi.getPersonalRecords(),
+    staleTime: 5 * 60 * 1000,
+  })
+}
