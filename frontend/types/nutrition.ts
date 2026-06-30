@@ -57,6 +57,13 @@ export interface RecentFood {
   last_eaten: string
 }
 
+export interface CalorieGoal {
+  id: string
+  daily_calories: number
+  created_at: string
+  updated_at: string
+}
+
 export interface NutritionCreateRequest {
   entry_date: string
   meal_type: MealType

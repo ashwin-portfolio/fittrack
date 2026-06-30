@@ -58,6 +58,26 @@ export function useLogMeal() {
   })
 }
 
+export function useCalorieGoal() {
+  return useQuery({
+    queryKey: ['nutrition', 'calorie-goal'],
+    queryFn: () => nutritionApi.getCalorieGoal(),
+    staleTime: 10 * 60 * 1000,
+  })
+}
+
+export function useSetCalorieGoal() {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: (daily_calories: number) => nutritionApi.setCalorieGoal(daily_calories),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['nutrition', 'calorie-goal'] })
+      toast.success('Calorie goal saved.')
+    },
+    onError: (error) => toast.error(getApiErrorMessage(error)),
+  })
+}
+
 export function useDeleteMeal(date: string) {
   const queryClient = useQueryClient()
   return useMutation({

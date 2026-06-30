@@ -6,6 +6,7 @@ from sqlalchemy.orm import Session
 
 from app.api.deps import get_current_active_user, get_db
 from app.models.user import User
+from app.schemas.calorie_goal import CalorieGoalRequest, CalorieGoalResponse
 from app.schemas.nutrition import (
     DailySummaryResponse,
     FoodSearchListResponse,
@@ -15,6 +16,7 @@ from app.schemas.nutrition import (
     NutritionResponse,
     RecentFoodResponse,
 )
+from app.services.calorie_goal_service import calorie_goal_service
 from app.services.food_search_service import food_search_service
 from app.services.nutrition_service import nutrition_service
 
@@ -53,6 +55,23 @@ def get_recent_foods(
 ):
     """User's recently logged foods — ordered by most recently eaten."""
     return nutrition_service.recent_foods(db, current_user, limit=limit)
+
+
+@router.get("/calorie-goal", response_model=CalorieGoalResponse)
+def get_calorie_goal(
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_active_user),
+):
+    return calorie_goal_service.get_goal(db, current_user)
+
+
+@router.put("/calorie-goal", response_model=CalorieGoalResponse)
+def set_calorie_goal(
+    body: CalorieGoalRequest,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_active_user),
+):
+    return calorie_goal_service.set_goal(db, current_user, body)
 
 
 @router.get("/barcode/{barcode}", response_model=FoodSearchResult)
