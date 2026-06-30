@@ -5,7 +5,9 @@ from sqlalchemy.orm import Session
 
 from app.api.deps import get_current_active_user, get_db
 from app.models.user import User
+from app.schemas.template import SaveAsTemplateRequest, TemplateResponse
 from app.schemas.workout import WorkoutCreateRequest, WorkoutListResponse, WorkoutResponse
+from app.services.template_service import template_service
 from app.services.workout_service import workout_service
 
 router = APIRouter()
@@ -47,6 +49,16 @@ def update_workout(
     current_user: User = Depends(get_current_active_user),
 ):
     return workout_service.update_workout(db, current_user, workout_id, body)
+
+
+@router.post("/{workout_id}/save-as-template", response_model=TemplateResponse, status_code=201)
+def save_as_template(
+    workout_id: uuid.UUID,
+    body: SaveAsTemplateRequest,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_active_user),
+):
+    return template_service.save_workout_as_template(db, current_user, workout_id, body)
 
 
 @router.delete("/{workout_id}", status_code=204)

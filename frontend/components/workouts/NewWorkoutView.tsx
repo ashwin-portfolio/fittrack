@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation'
 import { FormProvider, useFieldArray, useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { format } from 'date-fns'
-import { ArrowLeft, Loader2, Plus } from 'lucide-react'
+import { ArrowLeft, BookTemplate, Loader2, Plus } from 'lucide-react'
 import Link from 'next/link'
 import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
@@ -13,14 +13,17 @@ import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 import { ExercisePicker } from '@/components/workouts/ExercisePicker'
 import { ExerciseBlock } from '@/components/workouts/ExerciseBlock'
+import { TemplatePickerDialog } from '@/components/workouts/TemplatePickerDialog'
 import { workoutFormSchema, type WorkoutFormValues } from '@/lib/validators/workout'
 import { useCreateWorkout } from '@/hooks/useWorkouts'
 import type { Exercise } from '@/types/workout'
+import type { Template } from '@/types/template'
 
 export function NewWorkoutView() {
   const router = useRouter()
   const createWorkout = useCreateWorkout()
   const [pickerOpen, setPickerOpen] = useState(false)
+  const [templatePickerOpen, setTemplatePickerOpen] = useState(false)
 
   const form = useForm<WorkoutFormValues>({
     resolver: zodResolver(workoutFormSchema),
@@ -44,6 +47,23 @@ export function NewWorkoutView() {
       muscle_group: exercise.muscle_group,
       sets: [{ set_number: 1, reps: 10, weight_kg: 0 }],
     })
+  }
+
+  function loadTemplate(template: Template) {
+    form.setValue('name', template.name)
+    form.setValue(
+      'exercises',
+      template.exercises.map((te) => ({
+        exercise_id: te.exercise_id,
+        exercise_name: te.exercise_name,
+        muscle_group: te.muscle_group,
+        sets: te.sets.map((s) => ({
+          set_number: s.set_number,
+          reps: s.reps,
+          weight_kg: s.weight_kg,
+        })),
+      })),
+    )
   }
 
   const onSubmit = form.handleSubmit((values) => {
@@ -82,7 +102,16 @@ export function NewWorkoutView() {
               <ArrowLeft className="h-4 w-4" />
             </Button>
           </Link>
-          <h1 className="text-xl font-bold">Log Workout</h1>
+          <h1 className="text-xl font-bold flex-1">Log Workout</h1>
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            onClick={() => setTemplatePickerOpen(true)}
+          >
+            <BookTemplate className="h-4 w-4 mr-1.5" />
+            Template
+          </Button>
         </div>
 
         {/* Date + Name */}
@@ -178,6 +207,12 @@ export function NewWorkoutView() {
         open={pickerOpen}
         onOpenChange={setPickerOpen}
         onSelect={addExercise}
+      />
+
+      <TemplatePickerDialog
+        open={templatePickerOpen}
+        onOpenChange={setTemplatePickerOpen}
+        onSelect={loadTemplate}
       />
     </FormProvider>
   )

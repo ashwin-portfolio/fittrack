@@ -88,10 +88,36 @@ apiClient.interceptors.response.use(
 
 export function getApiErrorMessage(error: unknown): string {
   if (axios.isAxiosError(error)) {
-    const detail = error.response?.data?.detail
+    // No response = network-level failure (backend unreachable, CORS blocked, timeout)
+    if (!error.response) {
+      if (error.code === 'ECONNABORTED') return 'Request timed out. Please try again.'
+      return 'Cannot connect to the server. Make sure the backend is running.'
+    }
+
+    const { status, data } = error.response
+
+    // Use the detail message from the response body when present
+    const detail = data?.detail
     if (typeof detail === 'string') return detail
-    if (Array.isArray(detail)) return detail[0]?.msg ?? 'Something went wrong'
+    if (Array.isArray(detail)) {
+      return detail.map((e: { msg?: string }) => e.msg ?? String(e)).join(', ')
+    }
+
+    // Status-based fallbacks
+    switch (status) {
+      case 400: return 'Bad request. Please check your input.'
+      case 401: return 'Invalid credentials or your session has expired.'
+      case 403: return 'You do not have permission to do this.'
+      case 404: return 'Not found.'
+      case 409: return 'This already exists.'
+      case 422: return 'Validation error. Please check your input.'
+      case 429: return 'Too many requests. Please slow down and try again.'
+      case 500:
+      case 502:
+      case 503: return 'Server error. Please try again in a moment.'
+      default:  return `Request failed (${status}).`
+    }
   }
   if (error instanceof Error) return error.message
-  return 'Something went wrong'
+  return 'Something went wrong.'
 }
