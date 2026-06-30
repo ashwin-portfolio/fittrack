@@ -1,6 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { toast } from 'sonner'
 import { templatesApi } from '@/lib/api/templates'
+import { getApiErrorMessage } from '@/lib/api/client'
 import type { SaveAsTemplateRequest, TemplateCreateRequest } from '@/types/template'
 
 const TEMPLATE_KEYS = {
@@ -33,9 +34,7 @@ export function useCreateTemplate() {
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: TEMPLATE_KEYS.list() })
     },
-    onError: () => {
-      toast.error('Failed to create template')
-    },
+    onError: (error) => toast.error(getApiErrorMessage(error)),
   })
 }
 
@@ -47,9 +46,7 @@ export function useDeleteTemplate() {
       qc.invalidateQueries({ queryKey: TEMPLATE_KEYS.list() })
       toast.success('Template deleted')
     },
-    onError: () => {
-      toast.error('Failed to delete template')
-    },
+    onError: (error) => toast.error(getApiErrorMessage(error)),
   })
 }
 
@@ -62,8 +59,6 @@ export function useSaveAsTemplate() {
       qc.invalidateQueries({ queryKey: TEMPLATE_KEYS.list() })
       toast.success('Template saved!')
     },
-    onError: () => {
-      toast.error('Failed to save template')
-    },
+    onError: (error) => toast.error(getApiErrorMessage(error)),
   })
 }
