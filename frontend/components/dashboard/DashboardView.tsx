@@ -1,6 +1,6 @@
 'use client'
 
-import { Dumbbell, Flame, Scale, Target, TrendingDown, TrendingUp, Zap } from 'lucide-react'
+import { Dumbbell, Flame, Minus, Scale, Target, TrendingDown, TrendingUp, Zap } from 'lucide-react'
 import { useAuthContext } from '@/lib/auth/context'
 import { PageHeader } from '@/components/layout/PageHeader'
 import { StatCard } from '@/components/dashboard/StatCard'
@@ -82,7 +82,9 @@ export function DashboardView() {
           value={formatWeightDelta(weightDelta)}
           subtitle="vs. previous entry"
           icon={
-            weightDelta !== null && weightDelta > 0 ? (
+            weightDelta === null ? (
+              <Minus className="h-4 w-4" />
+            ) : weightDelta > 0 ? (
               <TrendingUp className="h-4 w-4" />
             ) : (
               <TrendingDown className="h-4 w-4" />
