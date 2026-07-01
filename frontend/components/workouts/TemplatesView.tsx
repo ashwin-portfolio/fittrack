@@ -10,7 +10,7 @@ export function TemplatesView() {
   const { data, isLoading } = useTemplates()
 
   return (
-    <div className="space-y-5 pb-8">
+    <div className="space-y-5 pb-20 md:pb-6">
       <div className="flex items-center gap-2">
         <Link href="/workouts">
           <Button variant="ghost" size="icon" className="shrink-0">

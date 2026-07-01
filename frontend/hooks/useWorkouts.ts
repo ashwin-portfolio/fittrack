@@ -51,6 +51,7 @@ export function useUpdateWorkout(id: string) {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['workouts', 'list'] })
       queryClient.invalidateQueries({ queryKey: queryKeys.workouts.detail(id) })
+      queryClient.invalidateQueries({ queryKey: queryKeys.dashboard.summary() })
     },
     onError: (error) => toast.error(getApiErrorMessage(error)),
   })
