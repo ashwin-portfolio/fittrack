@@ -17,7 +17,7 @@ export function ProgressView() {
   const { data, isLoading } = useWeightHistory({ days: 365 })
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 pb-20 md:pb-6">
       <PageHeader
         title="Progress"
         subtitle="Track your weight over time"

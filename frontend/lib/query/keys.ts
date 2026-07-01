@@ -19,6 +19,7 @@ export const queryKeys = {
     dailySummary: (date: string) => ['nutrition', 'daily', date] as const,
   },
   weight: {
+    all: () => ['weight', 'history'] as const,
     history: (days?: number) => ['weight', 'history', days] as const,
   },
   feed: {

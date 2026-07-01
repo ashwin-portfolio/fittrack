@@ -20,7 +20,7 @@ export function useLogWeight() {
   return useMutation({
     mutationFn: (data: CreateWeightEntryRequest) => weightApi.create(data),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.weight.history() })
+      queryClient.invalidateQueries({ queryKey: queryKeys.weight.all() })
       queryClient.invalidateQueries({ queryKey: queryKeys.dashboard.summary() })
       toast.success('Weight logged')
     },
@@ -33,7 +33,7 @@ export function useDeleteWeightEntry() {
   return useMutation({
     mutationFn: (id: string) => weightApi.delete(id),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.weight.history() })
+      queryClient.invalidateQueries({ queryKey: queryKeys.weight.all() })
       queryClient.invalidateQueries({ queryKey: queryKeys.dashboard.summary() })
       toast.success('Entry deleted')
     },
