@@ -137,7 +137,7 @@ export function NewNutritionView({ defaultDate }: NewNutritionViewProps) {
   }
 
   return (
-    <div className="space-y-6 max-w-lg">
+    <div className="space-y-6 max-w-lg pb-20 md:pb-6">
       <h1 className="text-2xl font-bold tracking-tight">Log Meal</h1>
 
       {/* Recent foods */}

@@ -65,7 +65,7 @@ export function MealSection({ mealType, entries, date }: MealSectionProps) {
               </div>
               <button
                 onClick={() => setPendingDeleteId(entry.id)}
-                className="opacity-0 group-hover:opacity-100 p-1.5 rounded text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-all"
+                className="p-1.5 rounded text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-all md:opacity-0 md:group-hover:opacity-100"
                 aria-label="Delete entry"
               >
                 <Trash2 className="h-3.5 w-3.5" />
