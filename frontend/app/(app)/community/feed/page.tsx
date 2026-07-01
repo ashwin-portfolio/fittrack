@@ -15,7 +15,7 @@ export default function CommunityFeedPage() {
   const followingQuery = useFollowingFeed({ type: filter })
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-4 pb-20 md:pb-6">
       <PageHeader title="Community" subtitle="See what others are up to" />
 
       <Tabs defaultValue="global">

@@ -15,7 +15,7 @@ export default function DiscoverPage() {
   const { data, isLoading } = useSearchUsers(debouncedQ || undefined)
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-4 pb-20 md:pb-6">
       <PageHeader title="Discover" subtitle="Find and follow other FitTrack users" />
 
       <div className="relative">

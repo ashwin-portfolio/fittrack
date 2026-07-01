@@ -40,7 +40,7 @@ export function CommentCard({ comment, feedItemId }: CommentCardProps) {
         <button
           onClick={() => deleteComment(comment.id)}
           disabled={isPending}
-          className="mt-0.5 shrink-0 text-muted-foreground opacity-0 transition-opacity hover:text-destructive group-hover:opacity-100"
+          className="mt-0.5 shrink-0 text-muted-foreground transition-opacity hover:text-destructive md:opacity-0 md:group-hover:opacity-100"
           aria-label="Delete comment"
         >
           <Trash2 className="h-3.5 w-3.5" />
