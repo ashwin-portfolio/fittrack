@@ -83,6 +83,15 @@ def update_workout(
     return workout_service.update_workout(db, current_user, workout_id, body)
 
 
+@router.post("/{workout_id}/duplicate", response_model=WorkoutResponse, status_code=201)
+def duplicate_workout(
+    workout_id: uuid.UUID,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_active_user),
+):
+    return workout_service.duplicate_workout(db, current_user, workout_id)
+
+
 @router.post("/{workout_id}/save-as-template", response_model=TemplateResponse, status_code=201)
 def save_as_template(
     workout_id: uuid.UUID,

@@ -33,6 +33,11 @@ export const workoutsApi = {
     await apiClient.delete(`/workouts/${id}`)
   },
 
+  duplicate: async (id: string): Promise<WorkoutResponse> => {
+    const res = await apiClient.post<WorkoutResponse>(`/workouts/${id}/duplicate`)
+    return res.data
+  },
+
   getPersonalRecords: async (): Promise<PersonalRecordsResponse> => {
     const res = await apiClient.get<PersonalRecordsResponse>('/workouts/personal-records')
     return res.data

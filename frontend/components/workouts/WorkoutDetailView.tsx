@@ -3,14 +3,14 @@
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
-import { ArrowLeft, BookTemplate, Pencil, Share2, Trash2 } from 'lucide-react'
+import { ArrowLeft, BookTemplate, Copy, Pencil, Share2, Trash2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import { Skeleton } from '@/components/ui/skeleton'
 import { Badge } from '@/components/ui/badge'
 import { ConfirmDialog } from '@/components/shared/ConfirmDialog'
 import { SaveAsTemplateDialog } from '@/components/workouts/SaveAsTemplateDialog'
-import { useWorkout, useDeleteWorkout } from '@/hooks/useWorkouts'
+import { useWorkout, useDeleteWorkout, useDuplicateWorkout } from '@/hooks/useWorkouts'
 import { MUSCLE_GROUP_LABELS } from '@/lib/constants/workout'
 import { formatDate } from '@/lib/utils/format'
 import type { WorkoutExercise } from '@/types/workout'
@@ -23,6 +23,7 @@ export function WorkoutDetailView({ workoutId }: WorkoutDetailViewProps) {
   const router = useRouter()
   const { data: workout, isLoading, isError } = useWorkout(workoutId)
   const deleteWorkout = useDeleteWorkout()
+  const duplicateWorkout = useDuplicateWorkout()
   const [deleteOpen, setDeleteOpen] = useState(false)
   const [saveTemplateOpen, setSaveTemplateOpen] = useState(false)
 
@@ -64,6 +65,20 @@ export function WorkoutDetailView({ workoutId }: WorkoutDetailViewProps) {
           onClick={() => setSaveTemplateOpen(true)}
         >
           <BookTemplate className="h-4 w-4" />
+        </Button>
+        <Button
+          variant="ghost"
+          size="icon"
+          className="shrink-0"
+          title="Duplicate workout"
+          disabled={duplicateWorkout.isPending}
+          onClick={() =>
+            duplicateWorkout.mutate(workoutId, {
+              onSuccess: (data) => router.push(`/workouts/${data.id}/edit`),
+            })
+          }
+        >
+          <Copy className="h-4 w-4" />
         </Button>
         <Link href={`/workouts/${workoutId}/edit`}>
           <Button variant="ghost" size="icon" className="shrink-0">

@@ -70,6 +70,18 @@ export function useDeleteWorkout() {
   })
 }
 
+export function useDuplicateWorkout() {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: (id: string) => workoutsApi.duplicate(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['workouts', 'list'] })
+      queryClient.invalidateQueries({ queryKey: queryKeys.dashboard.summary() })
+    },
+    onError: (error) => toast.error(getApiErrorMessage(error)),
+  })
+}
+
 export function useLoggedExercises() {
   return useQuery({
     queryKey: ['workouts', 'logged-exercises'],

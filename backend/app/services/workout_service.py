@@ -257,6 +257,45 @@ class WorkoutService:
             total_sessions=len(entries),
         )
 
+    def duplicate_workout(
+        self, db: Session, current_user: User, workout_id: uuid.UUID
+    ) -> WorkoutResponse:
+        from datetime import date as date_type
+        original = workout_repo.get_by_id(db, workout_id)
+        _check_ownership(original, current_user.id)
+
+        new_session = workout_repo.create_session(
+            db,
+            user_id=current_user.id,
+            session_date=date_type.today(),
+            name=original.name,  # type: ignore[union-attr]
+            notes=original.notes,  # type: ignore[union-attr]
+            is_shared=False,
+        )
+
+        for we in original.workout_exercises:  # type: ignore[union-attr]
+            new_we = workout_repo.add_exercise(
+                db,
+                session_id=new_session.id,
+                exercise_id=we.exercise_id,
+                order_index=we.order_index,
+            )
+            for s in we.sets:
+                workout_repo.add_set(
+                    db,
+                    workout_exercise_id=new_we.id,
+                    set_number=s.set_number,
+                    reps=s.reps,
+                    weight_kg=s.weight_kg,
+                )
+
+        db.flush()
+        db.refresh(new_session, ["workout_exercises"])
+        for we in new_session.workout_exercises:
+            db.refresh(we, ["exercise", "sets"])
+
+        return _build_response(new_session)
+
     def personal_records(self, db: Session, current_user: User) -> PersonalRecordsResponse:
         rows = workout_repo.get_personal_records(db, current_user.id)
         records = [
