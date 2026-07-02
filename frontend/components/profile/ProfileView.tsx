@@ -56,7 +56,7 @@ export function ProfileView() {
   const followingCount = profile.following_count ?? 0
 
   return (
-    <div className="space-y-6 max-w-lg mx-auto">
+    <div className="space-y-6 max-w-lg mx-auto pb-20 md:pb-6">
       {/* Avatar + identity */}
       <div className="flex flex-col items-center gap-3 pt-4 text-center">
         <Avatar name={profile.full_name} username={username} size="lg" />

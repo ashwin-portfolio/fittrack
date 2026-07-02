@@ -61,6 +61,7 @@ export function useFollow(username: string) {
       isFollowing ? socialApi.unfollow(username) : socialApi.follow(username),
     onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: queryKeys.profile.public(username) })
+      queryClient.invalidateQueries({ queryKey: queryKeys.profile.me() })
       queryClient.invalidateQueries({ queryKey: queryKeys.social.suggestions() })
       toast.success(data.is_following ? `Following @${username}` : `Unfollowed @${username}`)
     },

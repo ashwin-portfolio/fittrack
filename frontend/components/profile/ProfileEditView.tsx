@@ -103,7 +103,7 @@ export function ProfileEditView() {
   const bioValue = form.watch('bio') ?? ''
 
   return (
-    <div className="space-y-6 max-w-lg">
+    <div className="space-y-6 max-w-lg pb-20 md:pb-6">
       <h1 className="text-2xl font-bold tracking-tight">Edit Profile</h1>
 
       {/* Avatar preview — initials-based, not uploadable */}
