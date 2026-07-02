@@ -11,6 +11,8 @@ from app.repositories.feed_repository import feed_repo
 from app.repositories.nutrition_repository import nutrition_repo
 from app.schemas.nutrition import (
     DailySummaryResponse,
+    FavouriteMealRequest,
+    FavouriteMealResponse,
     NutritionCreateRequest,
     NutritionListResponse,
     NutritionResponse,
@@ -93,6 +95,38 @@ class NutritionService:
             raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Access denied")
         feed_repo.soft_delete_by_nutrition(db, entry.id)
         nutrition_repo.soft_delete(db, entry)
+
+    # ── Favourites ────────────────────────────────────────────────────────────
+
+    def list_favourites(
+        self, db: Session, current_user: User
+    ) -> list[FavouriteMealResponse]:
+        favs = nutrition_repo.list_favourites(db, current_user.id)
+        return [FavouriteMealResponse.model_validate(f) for f in favs]
+
+    def add_favourite(
+        self, db: Session, current_user: User, body: FavouriteMealRequest
+    ) -> FavouriteMealResponse:
+        fav = nutrition_repo.upsert_favourite(
+            db,
+            user_id=current_user.id,
+            food_name=body.food_name.strip(),
+            calories=body.calories,
+            protein_g=body.protein_g,
+            carbs_g=body.carbs_g,
+            fat_g=body.fat_g,
+        )
+        return FavouriteMealResponse.model_validate(fav)
+
+    def remove_favourite(
+        self, db: Session, current_user: User, favourite_id: uuid.UUID
+    ) -> None:
+        fav = nutrition_repo.get_favourite_by_id(db, favourite_id)
+        if fav is None:
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Favourite not found")
+        if fav.user_id != current_user.id:
+            raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Access denied")
+        nutrition_repo.delete_favourite(db, fav)
 
 
 nutrition_service = NutritionService()

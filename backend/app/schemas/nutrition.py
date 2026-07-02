@@ -82,3 +82,25 @@ class RecentFoodResponse(BaseModel):
     last_eaten: datetime
 
     model_config = {"from_attributes": True}
+
+
+# ── Favourite meals ───────────────────────────────────────────────────────────
+
+class FavouriteMealRequest(BaseModel):
+    food_name: str = Field(min_length=1, max_length=200)
+    calories: float = Field(ge=0, le=10000)
+    protein_g: float | None = Field(default=None, ge=0, le=1000)
+    carbs_g: float | None = Field(default=None, ge=0, le=1000)
+    fat_g: float | None = Field(default=None, ge=0, le=1000)
+
+
+class FavouriteMealResponse(BaseModel):
+    id: uuid.UUID
+    food_name: str
+    calories: float
+    protein_g: float | None
+    carbs_g: float | None
+    fat_g: float | None
+    created_at: datetime
+
+    model_config = {"from_attributes": True}

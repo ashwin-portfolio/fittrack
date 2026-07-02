@@ -17,6 +17,7 @@ export const queryKeys = {
   nutrition: {
     all: (params?: object) => ['nutrition', params] as const,
     dailySummary: (date: string) => ['nutrition', 'daily', date] as const,
+    favourites: () => ['nutrition', 'favourites'] as const,
   },
   weight: {
     all: () => ['weight', 'history'] as const,

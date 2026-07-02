@@ -5,7 +5,7 @@ import { toast } from 'sonner'
 import { nutritionApi } from '@/lib/api/nutrition'
 import { getApiErrorMessage } from '@/lib/api/client'
 import { queryKeys } from '@/lib/query/keys'
-import type { NutritionCreateRequest } from '@/types/nutrition'
+import type { FavouriteMealCreateRequest, NutritionCreateRequest } from '@/types/nutrition'
 
 const STALE_2M = 2 * 60 * 1000
 
@@ -73,6 +73,36 @@ export function useSetCalorieGoal() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['nutrition', 'calorie-goal'] })
       toast.success('Calorie goal saved.')
+    },
+    onError: (error) => toast.error(getApiErrorMessage(error)),
+  })
+}
+
+export function useFavouriteMeals() {
+  return useQuery({
+    queryKey: queryKeys.nutrition.favourites(),
+    queryFn: () => nutritionApi.getFavourites(),
+    staleTime: 5 * 60 * 1000,
+  })
+}
+
+export function useAddFavourite() {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: (data: FavouriteMealCreateRequest) => nutritionApi.addFavourite(data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.nutrition.favourites() })
+    },
+    onError: (error) => toast.error(getApiErrorMessage(error)),
+  })
+}
+
+export function useRemoveFavourite() {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: (id: string) => nutritionApi.removeFavourite(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.nutrition.favourites() })
     },
     onError: (error) => toast.error(getApiErrorMessage(error)),
   })

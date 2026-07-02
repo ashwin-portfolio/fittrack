@@ -64,6 +64,24 @@ export interface CalorieGoal {
   updated_at: string
 }
 
+export interface FavouriteMeal {
+  id: string
+  food_name: string
+  calories: number
+  protein_g: number | null
+  carbs_g: number | null
+  fat_g: number | null
+  created_at: string
+}
+
+export interface FavouriteMealCreateRequest {
+  food_name: string
+  calories: number
+  protein_g?: number | null
+  carbs_g?: number | null
+  fat_g?: number | null
+}
+
 export interface NutritionCreateRequest {
   entry_date: string
   meal_type: MealType

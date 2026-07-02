@@ -9,6 +9,8 @@ from app.models.user import User
 from app.schemas.calorie_goal import CalorieGoalRequest, CalorieGoalResponse
 from app.schemas.nutrition import (
     DailySummaryResponse,
+    FavouriteMealRequest,
+    FavouriteMealResponse,
     FoodSearchListResponse,
     FoodSearchResult,
     NutritionCreateRequest,
@@ -105,6 +107,32 @@ def create_entry(
     current_user: User = Depends(get_current_active_user),
 ):
     return nutrition_service.create_entry(db, current_user, body)
+
+
+@router.get("/favourites", response_model=list[FavouriteMealResponse])
+def list_favourites(
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_active_user),
+):
+    return nutrition_service.list_favourites(db, current_user)
+
+
+@router.post("/favourites", response_model=FavouriteMealResponse, status_code=201)
+def add_favourite(
+    body: FavouriteMealRequest,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_active_user),
+):
+    return nutrition_service.add_favourite(db, current_user, body)
+
+
+@router.delete("/favourites/{favourite_id}", status_code=204)
+def remove_favourite(
+    favourite_id: uuid.UUID,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_active_user),
+):
+    nutrition_service.remove_favourite(db, current_user, favourite_id)
 
 
 @router.delete("/{entry_id}", status_code=204)

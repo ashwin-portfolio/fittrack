@@ -3,6 +3,8 @@ import { apiClient } from '@/lib/api/client'
 import type {
   CalorieGoal,
   DailySummary,
+  FavouriteMeal,
+  FavouriteMealCreateRequest,
   FoodSearchListResponse,
   NutritionCreateRequest,
   NutritionListResponse,
@@ -58,5 +60,19 @@ export const nutritionApi = {
   setCalorieGoal: async (daily_calories: number): Promise<CalorieGoal> => {
     const res = await apiClient.put<CalorieGoal>('/nutrition/calorie-goal', { daily_calories })
     return res.data
+  },
+
+  getFavourites: async (): Promise<FavouriteMeal[]> => {
+    const res = await apiClient.get<FavouriteMeal[]>('/nutrition/favourites')
+    return res.data
+  },
+
+  addFavourite: async (data: FavouriteMealCreateRequest): Promise<FavouriteMeal> => {
+    const res = await apiClient.post<FavouriteMeal>('/nutrition/favourites', data)
+    return res.data
+  },
+
+  removeFavourite: async (id: string): Promise<void> => {
+    await apiClient.delete(`/nutrition/favourites/${id}`)
   },
 }

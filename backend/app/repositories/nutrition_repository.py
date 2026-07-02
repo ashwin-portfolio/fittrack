@@ -6,7 +6,7 @@ from datetime import date, datetime, timezone
 from sqlalchemy import and_, func, select
 from sqlalchemy.orm import Session
 
-from app.models.nutrition import NutritionEntry
+from app.models.nutrition import FavoriteMeal, NutritionEntry
 
 
 class NutritionRepository:
@@ -126,6 +126,64 @@ class NutritionRepository:
 
     def soft_delete(self, db: Session, entry: NutritionEntry) -> None:
         entry.deleted_at = datetime.now(timezone.utc)
+        db.flush()
+
+    # ── Favourites ────────────────────────────────────────────────────────────
+
+    def list_favourites(self, db: Session, user_id: uuid.UUID) -> list[FavoriteMeal]:
+        return list(
+            db.scalars(
+                select(FavoriteMeal)
+                .where(FavoriteMeal.user_id == user_id)
+                .order_by(FavoriteMeal.food_name.asc())
+            ).all()
+        )
+
+    def upsert_favourite(
+        self,
+        db: Session,
+        *,
+        user_id: uuid.UUID,
+        food_name: str,
+        calories: float,
+        protein_g: float | None,
+        carbs_g: float | None,
+        fat_g: float | None,
+    ) -> FavoriteMeal:
+        existing = db.scalar(
+            select(FavoriteMeal).where(
+                FavoriteMeal.user_id == user_id,
+                FavoriteMeal.food_name == food_name,
+            )
+        )
+        if existing:
+            existing.calories = calories
+            existing.protein_g = protein_g
+            existing.carbs_g = carbs_g
+            existing.fat_g = fat_g
+            db.flush()
+            return existing
+        fav = FavoriteMeal(
+            user_id=user_id,
+            food_name=food_name,
+            calories=calories,
+            protein_g=protein_g,
+            carbs_g=carbs_g,
+            fat_g=fat_g,
+        )
+        db.add(fav)
+        db.flush()
+        return fav
+
+    def get_favourite_by_id(
+        self, db: Session, favourite_id: uuid.UUID
+    ) -> FavoriteMeal | None:
+        return db.scalar(
+            select(FavoriteMeal).where(FavoriteMeal.id == favourite_id)
+        )
+
+    def delete_favourite(self, db: Session, fav: FavoriteMeal) -> None:
+        db.delete(fav)
         db.flush()
 
 

@@ -41,3 +41,17 @@ class NutritionEntry(Base, TimestampMixin, SoftDeleteMixin):
 
     # ── Relationships ────────────────────────────────────────────────────────
     user: Mapped[User] = relationship("User", back_populates="nutrition_entries")
+
+
+class FavoriteMeal(Base, TimestampMixin):
+    __tablename__ = "favorite_meals"
+
+    id: Mapped[uuid.UUID] = mapped_column(primary_key=True, default=uuid.uuid4)
+    user_id: Mapped[uuid.UUID] = mapped_column(
+        ForeignKey("users.id", ondelete="CASCADE"),
+    )
+    food_name: Mapped[str] = mapped_column(String(200))
+    calories: Mapped[float] = mapped_column(Float)
+    protein_g: Mapped[float | None] = mapped_column(Float)
+    carbs_g: Mapped[float | None] = mapped_column(Float)
+    fat_g: Mapped[float | None] = mapped_column(Float)

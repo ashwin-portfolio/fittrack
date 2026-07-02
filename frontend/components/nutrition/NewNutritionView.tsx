@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
+import { Heart } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -25,8 +26,8 @@ import {
 } from '@/components/ui/form'
 import { FoodSearchInput } from './FoodSearchInput'
 import { nutritionFormSchema, type NutritionFormValues } from '@/lib/validators/nutrition'
-import { useLogMeal, useRecentFoods } from '@/hooks/useNutrition'
-import type { FoodSearchResult, MealType, RecentFood } from '@/types/nutrition'
+import { useFavouriteMeals, useLogMeal, useRecentFoods } from '@/hooks/useNutrition'
+import type { FavouriteMeal, FoodSearchResult, MealType, RecentFood } from '@/types/nutrition'
 
 const MEAL_LABELS: Record<MealType, string> = {
   breakfast: 'Breakfast',
@@ -59,6 +60,7 @@ export function NewNutritionView({ defaultDate }: NewNutritionViewProps) {
   const router = useRouter()
   const logMeal = useLogMeal()
   const { data: recentFoods } = useRecentFoods()
+  const { data: favourites } = useFavouriteMeals()
 
   const [baseFood, setBaseFood] = useState<FoodSearchResult | null>(null)
   const [servingCount, setServingCount] = useState(1)
@@ -106,6 +108,16 @@ export function NewNutritionView({ defaultDate }: NewNutritionViewProps) {
     form.setValue('fat_g', nutrition.fat_g)
   }
 
+  function applyFavourite(fav: FavouriteMeal) {
+    setBaseFood(null)
+    setServingCount(1)
+    form.setValue('food_name', fav.food_name, { shouldValidate: true })
+    form.setValue('calories', fav.calories, { shouldValidate: true })
+    form.setValue('protein_g', fav.protein_g ?? null)
+    form.setValue('carbs_g', fav.carbs_g ?? null)
+    form.setValue('fat_g', fav.fat_g ?? null)
+  }
+
   function applyRecentFood(food: RecentFood) {
     setBaseFood(null)
     setServingCount(1)
@@ -139,6 +151,29 @@ export function NewNutritionView({ defaultDate }: NewNutritionViewProps) {
   return (
     <div className="space-y-6 max-w-lg pb-20 md:pb-6">
       <h1 className="text-2xl font-bold tracking-tight">Log Meal</h1>
+
+      {/* Favourite foods */}
+      {favourites && favourites.length > 0 && (
+        <div className="space-y-2">
+          <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+            Favourites
+          </p>
+          <div className="flex flex-wrap gap-2">
+            {favourites.map((fav) => (
+              <button
+                key={fav.id}
+                type="button"
+                onClick={() => applyFavourite(fav)}
+                className="flex items-center gap-1 text-xs px-3 py-1.5 rounded-full border bg-background hover:bg-muted transition-colors"
+              >
+                <Heart className="h-3 w-3 fill-rose-400 text-rose-400 shrink-0" />
+                <span className="font-medium">{fav.food_name}</span>
+                <span className="text-muted-foreground">· {Math.round(fav.calories)} kcal</span>
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
 
       {/* Recent foods */}
       {recentFoods && recentFoods.length > 0 && (
