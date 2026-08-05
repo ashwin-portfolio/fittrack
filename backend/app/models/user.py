@@ -17,6 +17,7 @@ if TYPE_CHECKING:
     from app.models.profile import Profile
     from app.models.refresh_token import RefreshToken
     from app.models.social import Comment, Follow, Kudos
+    from app.models.water import WaterLog
     from app.models.weight import WeightLog
     from app.models.workout import WorkoutSession
 
@@ -69,6 +70,11 @@ class User(Base, TimestampMixin):
     )
     weight_logs: Mapped[list[WeightLog]] = relationship(
         "WeightLog",
+        back_populates="user",
+        cascade="all, delete-orphan",
+    )
+    water_logs: Mapped[list[WaterLog]] = relationship(
+        "WaterLog",
         back_populates="user",
         cascade="all, delete-orphan",
     )
