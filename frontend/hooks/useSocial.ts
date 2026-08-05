@@ -69,6 +69,24 @@ export function useFollow(username: string) {
   })
 }
 
+export function useFollowers(username: string, options?: { enabled?: boolean }) {
+  return useQuery({
+    queryKey: queryKeys.social.followers(username),
+    queryFn: () => socialApi.getFollowers(username),
+    enabled: Boolean(username) && (options?.enabled ?? true),
+    staleTime: 0,
+  })
+}
+
+export function useFollowing(username: string, options?: { enabled?: boolean }) {
+  return useQuery({
+    queryKey: queryKeys.social.following(username),
+    queryFn: () => socialApi.getFollowingList(username),
+    enabled: Boolean(username) && (options?.enabled ?? true),
+    staleTime: 0,
+  })
+}
+
 export function useSearchUsers(q?: string) {
   return useQuery({
     queryKey: queryKeys.social.suggestions(q),
