@@ -17,6 +17,7 @@ from app.schemas.nutrition import (
     NutritionListResponse,
     NutritionResponse,
     RecentFoodResponse,
+    WeeklySummaryResponse,
 )
 from app.services.calorie_goal_service import calorie_goal_service
 from app.services.food_search_service import food_search_service
@@ -37,6 +38,14 @@ def get_daily_summary(
 ):
     target = date or __import__("datetime").date.today()
     return nutrition_service.daily_summary(db, current_user, target)
+
+
+@router.get("/weekly-summary", response_model=WeeklySummaryResponse)
+def get_weekly_summary(
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_active_user),
+):
+    return nutrition_service.weekly_summary(db, current_user)
 
 
 @router.get("/search", response_model=FoodSearchListResponse)
