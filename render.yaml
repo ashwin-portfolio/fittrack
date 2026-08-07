@@ -1,0 +1,47 @@
+services:
+  - type: web
+    name: fittrack-api
+    runtime: docker
+    plan: free
+    region: oregon
+    dockerfilePath: ./backend/Dockerfile
+    dockerContext: ./backend
+    healthCheckPath: /docs
+    envVars:
+      # ── Database (Neon — unaffected by this migration) ───────────────────────
+      - key: DATABASE_URL
+        sync: false
+
+      # ── Security ───────────────────────────────────────────────────────────
+      # Generate with: python -c "import secrets; print(secrets.token_hex(32))"
+      - key: SECRET_KEY
+        sync: false
+      - key: ACCESS_TOKEN_EXPIRE_MINUTES
+        value: "30"
+      - key: REFRESH_TOKEN_EXPIRE_DAYS
+        value: "7"
+
+      # ── CORS ───────────────────────────────────────────────────────────────
+      # JSON array of allowed frontend origins.
+      - key: BACKEND_CORS_ORIGINS
+        value: '["https://fittrack-app.vercel.app"]'
+
+      # ── Food search (USDA FoodData Central) ───────────────────────────────────
+      - key: USDA_FDC_API_KEY
+        sync: false
+
+      # ── Email (Resend) ─────────────────────────────────────────────────────
+      - key: RESEND_API_KEY
+        sync: false
+      - key: FROM_EMAIL
+        value: "FitTrack <onboarding@resend.dev>"
+      - key: FRONTEND_URL
+        value: "https://fittrack-app.vercel.app"
+
+      # ── Observability (optional) ───────────────────────────────────────────
+      - key: SENTRY_DSN
+        sync: false
+
+      # ── App ────────────────────────────────────────────────────────────────
+      - key: ENVIRONMENT
+        value: production
