@@ -6,7 +6,9 @@ services:
     region: oregon
     dockerfilePath: ./backend/Dockerfile
     dockerContext: ./backend
-    healthCheckPath: /docs
+    # /docs is disabled when ENVIRONMENT=production (see app/main.py), so it
+    # 404s and fails the health check — /health is the always-on endpoint.
+    healthCheckPath: /health
     envVars:
       # ── Database (Neon — unaffected by this migration) ───────────────────────
       - key: DATABASE_URL
