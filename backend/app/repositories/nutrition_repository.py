@@ -66,6 +66,22 @@ class NutritionRepository:
         ).all()
         return list(rows), total
 
+    def list_by_date_and_meal_type(
+        self, db: Session, user_id: uuid.UUID, entry_date: date, meal_type: str
+    ) -> list[NutritionEntry]:
+        return list(
+            db.scalars(
+                select(NutritionEntry)
+                .where(
+                    NutritionEntry.user_id == user_id,
+                    NutritionEntry.entry_date == entry_date,
+                    NutritionEntry.meal_type == meal_type,
+                    NutritionEntry.deleted_at.is_(None),
+                )
+                .order_by(NutritionEntry.created_at.asc())
+            ).all()
+        )
+
     def get_by_id(self, db: Session, entry_id: uuid.UUID) -> NutritionEntry | None:
         return db.scalar(
             select(NutritionEntry).where(

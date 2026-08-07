@@ -13,6 +13,7 @@ if TYPE_CHECKING:
     from app.models.exercise import Exercise
     from app.models.feed import ActivityFeedItem
     from app.models.goal import Goal
+    from app.models.meal_template import MealTemplate
     from app.models.nutrition import NutritionEntry
     from app.models.profile import Profile
     from app.models.refresh_token import RefreshToken
@@ -64,6 +65,11 @@ class User(Base, TimestampMixin):
     )
     nutrition_entries: Mapped[list[NutritionEntry]] = relationship(
         "NutritionEntry",
+        back_populates="user",
+        cascade="all, delete-orphan",
+    )
+    meal_templates: Mapped[list[MealTemplate]] = relationship(
+        "MealTemplate",
         back_populates="user",
         cascade="all, delete-orphan",
     )

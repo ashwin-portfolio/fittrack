@@ -1,9 +1,10 @@
 'use client'
 
 import { useState } from 'react'
-import { Heart, Trash2 } from 'lucide-react'
+import { BookmarkPlus, Heart, Trash2 } from 'lucide-react'
 import { Card, CardContent } from '@/components/ui/card'
 import { ConfirmDialog } from '@/components/shared/ConfirmDialog'
+import { SaveMealAsTemplateDialog } from './SaveMealAsTemplateDialog'
 import { useAddFavourite, useDeleteMeal, useFavouriteMeals, useRemoveFavourite } from '@/hooks/useNutrition'
 import type { MealType, NutritionEntry } from '@/types/nutrition'
 
@@ -26,6 +27,7 @@ export function MealSection({ mealType, entries, date }: MealSectionProps) {
   const removeFavourite = useRemoveFavourite()
   const { data: favourites } = useFavouriteMeals()
   const [pendingDeleteId, setPendingDeleteId] = useState<string | null>(null)
+  const [saveTemplateOpen, setSaveTemplateOpen] = useState(false)
 
   if (entries.length === 0) return null
 
@@ -37,9 +39,18 @@ export function MealSection({ mealType, entries, date }: MealSectionProps) {
         <h3 className="text-sm font-semibold uppercase tracking-wide text-muted-foreground">
           {MEAL_LABELS[mealType]}
         </h3>
-        <span className="text-xs text-muted-foreground tabular-nums">
-          {Math.round(total)} kcal
-        </span>
+        <div className="flex items-center gap-3">
+          <button
+            onClick={() => setSaveTemplateOpen(true)}
+            className="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground transition-colors"
+          >
+            <BookmarkPlus className="h-3.5 w-3.5" />
+            Save as Template
+          </button>
+          <span className="text-xs text-muted-foreground tabular-nums">
+            {Math.round(total)} kcal
+          </span>
+        </div>
       </div>
 
       <Card>
@@ -119,6 +130,14 @@ export function MealSection({ mealType, entries, date }: MealSectionProps) {
           })
         }}
         onCancel={() => setPendingDeleteId(null)}
+      />
+
+      <SaveMealAsTemplateDialog
+        entryDate={date}
+        mealType={mealType}
+        defaultName={`${MEAL_LABELS[mealType]} template`}
+        open={saveTemplateOpen}
+        onOpenChange={setSaveTemplateOpen}
       />
     </div>
   )
