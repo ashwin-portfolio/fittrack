@@ -26,7 +26,7 @@ services:
       # ── CORS ───────────────────────────────────────────────────────────────
       # JSON array of allowed frontend origins.
       - key: BACKEND_CORS_ORIGINS
-        value: '["https://fittrack-app.vercel.app"]'
+        value: '["https://fittrack-plum.vercel.app"]'
 
       # ── Food search (USDA FoodData Central) ───────────────────────────────────
       - key: USDA_FDC_API_KEY
@@ -38,7 +38,7 @@ services:
       - key: FROM_EMAIL
         value: "FitTrack <onboarding@resend.dev>"
       - key: FRONTEND_URL
-        value: "https://fittrack-app.vercel.app"
+        value: "https://fittrack-plum.vercel.app"
 
       # ── Observability (optional) ───────────────────────────────────────────
       - key: SENTRY_DSN

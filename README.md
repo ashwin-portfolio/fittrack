@@ -2,7 +2,7 @@
 
 A full-stack fitness tracking web application — workouts, nutrition, weight progress, and a social community feed.
 
-**Live Demo:** [fittrack-app.vercel.app](https://fittrack-app.vercel.app) &nbsp;|&nbsp; **API:** [fittrack-api.onrender.com](https://fittrack-api.onrender.com/docs)
+**Live Demo:** [fittrack-plum.vercel.app](https://fittrack-plum.vercel.app) &nbsp;|&nbsp; **API:** [fittrack-api-ko8n.onrender.com](https://fittrack-api-ko8n.onrender.com/health)
 
 ---
 
