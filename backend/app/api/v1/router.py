@@ -1,7 +1,7 @@
 from fastapi import APIRouter
 
 from app.api.v1.endpoints import (
-    auth, dashboard, exercises, feed, follows, goals,
+    auth, dashboard, exercises, feed, follows, goals, meal_templates,
     nutrition, profile, social, templates, users, water, weight, workouts,
 )
 
@@ -21,6 +21,7 @@ api_router.include_router(workouts.router, prefix="/workouts", tags=["workouts"]
 
 # ── Nutrition ─────────────────────────────────────────────────────────────────
 api_router.include_router(nutrition.router, prefix="/nutrition", tags=["nutrition"])
+api_router.include_router(meal_templates.router, prefix="/nutrition/templates", tags=["nutrition"])
 
 # ── Weight Logs ───────────────────────────────────────────────────────────────
 api_router.include_router(weight.router, prefix="/weight", tags=["weight"])
