@@ -1,7 +1,7 @@
 """Add meal templates (meal_templates, meal_template_items)
 
 Revision ID: d5f7a9c1b3e6
-Revises: b3d5f7a9e2c4
+Revises: d5f7b9c1a3e6
 Create Date: 2026-08-06
 """
 from alembic import op
@@ -9,7 +9,7 @@ import sqlalchemy as sa
 from sqlalchemy.dialects import postgresql
 
 revision = "d5f7a9c1b3e6"
-down_revision = "b3d5f7a9e2c4"
+down_revision = "d5f7b9c1a3e6"
 branch_labels = None
 depends_on = None
 

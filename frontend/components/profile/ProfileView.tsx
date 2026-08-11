@@ -1,5 +1,6 @@
 'use client'
 
+import { useState } from 'react'
 import Link from 'next/link'
 import { Calendar, Globe, Lock, Pencil, Ruler } from 'lucide-react'
 import { Button } from '@/components/ui/button'
@@ -7,6 +8,7 @@ import { Card, CardContent } from '@/components/ui/card'
 import { Skeleton } from '@/components/ui/skeleton'
 import { Avatar } from '@/components/shared/Avatar'
 import { GoalCard } from '@/components/shared/GoalCard'
+import { FollowListSheet } from '@/components/social/FollowListSheet'
 import { useMyProfile } from '@/hooks/useProfile'
 import { useAuthContext } from '@/lib/auth/context'
 
@@ -17,18 +19,38 @@ const GENDER_LABELS: Record<string, string> = {
   prefer_not_to_say: 'Prefer not to say',
 }
 
-function StatBox({ label, value }: { label: string; value: string | number }) {
-  return (
-    <div className="flex flex-col items-center gap-0.5 px-4">
+function StatBox({
+  label,
+  value,
+  onClick,
+}: {
+  label: string
+  value: string | number
+  onClick?: () => void
+}) {
+  const inner = (
+    <>
       <span className="text-xl font-bold tabular-nums">{value}</span>
       <span className="text-xs text-muted-foreground">{label}</span>
-    </div>
+    </>
   )
+  if (onClick) {
+    return (
+      <button
+        onClick={onClick}
+        className="flex flex-col items-center gap-0.5 px-4 hover:opacity-70 transition-opacity"
+      >
+        {inner}
+      </button>
+    )
+  }
+  return <div className="flex flex-col items-center gap-0.5 px-4">{inner}</div>
 }
 
 export function ProfileView() {
   const { user } = useAuthContext()
   const { data: profile, isLoading } = useMyProfile()
+  const [followSheet, setFollowSheet] = useState<'followers' | 'following' | null>(null)
 
   if (isLoading || !user) {
     return (
@@ -89,8 +111,8 @@ export function ProfileView() {
       <Card>
         <CardContent className="py-4">
           <div className="flex justify-around divide-x">
-            <StatBox label="Followers" value={followerCount} />
-            <StatBox label="Following" value={followingCount} />
+            <StatBox label="Followers" value={followerCount} onClick={() => setFollowSheet('followers')} />
+            <StatBox label="Following" value={followingCount} onClick={() => setFollowSheet('following')} />
           </div>
         </CardContent>
       </Card>
@@ -140,6 +162,16 @@ export function ProfileView() {
         </p>
         <GoalCard />
       </div>
+
+      {followSheet && (
+        <FollowListSheet
+          username={username}
+          type={followSheet}
+          open={Boolean(followSheet)}
+          onOpenChange={(o) => { if (!o) setFollowSheet(null) }}
+          currentUsername={username}
+        />
+      )}
     </div>
   )
 }

@@ -23,6 +23,10 @@ export const queryKeys = {
     all: () => ['weight', 'history'] as const,
     history: (days?: number) => ['weight', 'history', days] as const,
   },
+  water: {
+    dailySummary: (date: string) => ['water', 'daily-summary', date] as const,
+    goal: () => ['water', 'goal'] as const,
+  },
   feed: {
     global: (filters?: object) => ['feed', 'global', filters] as const,
     following: (filters?: object) => ['feed', 'following', filters] as const,

@@ -50,6 +50,22 @@ class DailySummaryResponse(BaseModel):
     entry_count: int
 
 
+class WeeklyCalorieDay(BaseModel):
+    date: date
+    day_label: str          # "Mon", "Tue", ...
+    calories: float
+    goal_calories: int | None
+
+
+class WeeklySummaryResponse(BaseModel):
+    week_start: date
+    week_end: date
+    days: list[WeeklyCalorieDay]
+    total_calories: float
+    average_calories: float
+    daily_goal: int | None
+
+
 # ── Food database search (Open Food Facts) ────────────────────────────────────
 
 class FoodSearchResult(BaseModel):

@@ -2,7 +2,7 @@
 
 A full-stack fitness tracking web application — workouts, nutrition, weight progress, and a social community feed.
 
-**Live Demo:** [fittrack-app.vercel.app](https://fittrack-app.vercel.app) &nbsp;|&nbsp; **API:** [fittrack-api.railway.app](https://fittrack-api.railway.app/docs)
+**Live Demo:** [fittrack-plum.vercel.app](https://fittrack-plum.vercel.app) &nbsp;|&nbsp; **API:** [fittrack-api-ko8n.onrender.com](https://fittrack-api-ko8n.onrender.com/health)
 
 ---
 
@@ -52,7 +52,7 @@ A full-stack fitness tracking web application — workouts, nutrition, weight pr
 | Rate Limiting | slowapi (10/min auth, 200/min global) |
 | Migrations | Alembic |
 | Frontend Hosting | Vercel |
-| Backend Hosting | Railway |
+| Backend Hosting | Render |
 | Database Hosting | Neon |
 
 ---
@@ -70,7 +70,7 @@ A full-stack fitness tracking web application — workouts, nutrition, weight pr
 └─────────────────────────┬───────────────────────────────────────┘
                           │ REST API (HTTPS)
 ┌─────────────────────────▼───────────────────────────────────────┐
-│                   Railway (Backend)                              │
+│                   Render (Backend)                               │
 │   FastAPI · Uvicorn · Repository pattern · Service layer         │
 │   ┌──────────┐  ┌───────────┐  ┌──────────┐  ┌─────────────┐  │
 │   │   Auth   │  │ Workouts  │  │Nutrition │  │  Community  │  │
@@ -179,22 +179,32 @@ App available at `http://localhost:3000`
 | Service | Purpose | URL |
 |---|---|---|
 | Vercel | Frontend hosting (Next.js) | [vercel.com](https://vercel.com) |
-| Railway | Backend hosting (FastAPI + Uvicorn) | [railway.app](https://railway.app) |
+| Render | Backend hosting (FastAPI + Uvicorn, Docker) | [render.com](https://render.com) |
 | Neon | Serverless PostgreSQL | [neon.tech](https://neon.tech) |
+
+Backend deploys from [`render.yaml`](render.yaml) — a Render Blueprint. In the Render
+dashboard, choose **New → Blueprint**, connect this repo, and Render reads the file
+automatically. It builds `backend/Dockerfile` as a free-tier Web Service.
+
+> **Free tier note:** Render's free Web Services spin down after ~15 minutes of
+> inactivity and take 30-50s to cold-start on the next request. Fine for a portfolio
+> project; upgrade to a paid plan if you need it always-warm.
 
 **Environment variables required in production:**
 
-Railway (backend):
+Render (backend) — set these as secrets in the Render dashboard the first time the
+Blueprint runs (marked `sync: false` in `render.yaml` so Render prompts for them):
 ```
 DATABASE_URL        # Neon connection string with ?sslmode=require
-SECRET_KEY          # Generated with: openssl rand -hex 32
-ENVIRONMENT         # production
+SECRET_KEY          # Generated with: python -c "import secrets; print(secrets.token_hex(32))"
 BACKEND_CORS_ORIGINS  # ["https://your-app.vercel.app"]
+USDA_FDC_API_KEY    # optional — falls back to DEMO_KEY
+RESEND_API_KEY      # optional — dev fallback prints emails to the console
 ```
 
 Vercel (frontend):
 ```
-NEXT_PUBLIC_API_URL   # https://your-api.railway.app/api/v1
+NEXT_PUBLIC_API_URL   # https://your-api.onrender.com/api/v1
 ```
 
 ---
@@ -228,7 +238,7 @@ See [docs/ERD.md](docs/ERD.md) for the full schema.
 - [x] Dashboard analytics
 - [x] Community feed, kudos, comments
 - [x] Follow system and public profiles
-- [x] Deployed to Vercel + Railway + Neon
+- [x] Deployed to Vercel + Render + Neon
 
 ### v1.1 — In Progress
 - [ ] Workout Templates (save and reuse workout structures)
