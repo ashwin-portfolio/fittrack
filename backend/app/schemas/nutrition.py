@@ -50,6 +50,11 @@ class DailySummaryResponse(BaseModel):
     entry_count: int
 
 
+class NutritionStreakResponse(BaseModel):
+    current_streak: int
+    longest_streak: int
+
+
 # ── Food database search (Open Food Facts) ────────────────────────────────────
 
 class FoodSearchResult(BaseModel):

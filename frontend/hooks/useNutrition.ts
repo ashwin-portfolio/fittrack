@@ -27,6 +27,14 @@ export function useDailySummary(date: string) {
   })
 }
 
+export function useNutritionStreak() {
+  return useQuery({
+    queryKey: ['nutrition', 'streak'],
+    queryFn: () => nutritionApi.getStreak(),
+    staleTime: STALE_2M,
+  })
+}
+
 export function useFoodSearch(q: string) {
   return useQuery({
     queryKey: ['nutrition', 'search', q],
@@ -53,6 +61,7 @@ export function useLogMeal() {
       queryClient.invalidateQueries({ queryKey: queryKeys.nutrition.dailySummary(variables.entry_date) })
       queryClient.invalidateQueries({ queryKey: queryKeys.dashboard.summary() })
       queryClient.invalidateQueries({ queryKey: ['nutrition', 'recent'] })
+      queryClient.invalidateQueries({ queryKey: ['nutrition', 'streak'] })
     },
     onError: (error) => toast.error(getApiErrorMessage(error)),
   })
@@ -116,6 +125,7 @@ export function useDeleteMeal(date: string) {
       queryClient.invalidateQueries({ queryKey: queryKeys.nutrition.all({ date }) })
       queryClient.invalidateQueries({ queryKey: queryKeys.nutrition.dailySummary(date) })
       queryClient.invalidateQueries({ queryKey: queryKeys.dashboard.summary() })
+      queryClient.invalidateQueries({ queryKey: ['nutrition', 'streak'] })
       toast.success('Entry deleted.')
     },
     onError: (error) => toast.error(getApiErrorMessage(error)),

@@ -92,6 +92,18 @@ class NutritionRepository:
         ).one()
         return row._asdict()
 
+    def list_logged_dates(self, db: Session, user_id: uuid.UUID) -> list[date]:
+        """Distinct dates with at least one active entry, for streak calculation."""
+        rows = db.execute(
+            select(NutritionEntry.entry_date)
+            .where(
+                NutritionEntry.user_id == user_id,
+                NutritionEntry.deleted_at.is_(None),
+            )
+            .distinct()
+        ).all()
+        return [r.entry_date for r in rows]
+
     def recent_foods(
         self, db: Session, user_id: uuid.UUID, limit: int = 20
     ) -> list[NutritionEntry]:

@@ -16,6 +16,7 @@ from app.schemas.nutrition import (
     NutritionCreateRequest,
     NutritionListResponse,
     NutritionResponse,
+    NutritionStreakResponse,
     RecentFoodResponse,
 )
 from app.services.calorie_goal_service import calorie_goal_service
@@ -37,6 +38,14 @@ def get_daily_summary(
 ):
     target = date or __import__("datetime").date.today()
     return nutrition_service.daily_summary(db, current_user, target)
+
+
+@router.get("/streak", response_model=NutritionStreakResponse)
+def get_streak(
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_active_user),
+):
+    return nutrition_service.streak(db, current_user)
 
 
 @router.get("/search", response_model=FoodSearchListResponse)

@@ -8,6 +8,7 @@ import { Skeleton } from '@/components/ui/skeleton'
 import { NutritionDaySummary } from './NutritionDaySummary'
 import { MealSection } from './MealSection'
 import { SetCalorieGoalDialog } from './SetCalorieGoalDialog'
+import { NutritionStreakBadge } from './NutritionStreakBadge'
 import { useNutritionEntries, useDailySummary, useCalorieGoal } from '@/hooks/useNutrition'
 import type { MealType, NutritionEntry } from '@/types/nutrition'
 
@@ -64,7 +65,10 @@ export function NutritionListView() {
     <div className="space-y-6 pb-20 md:pb-6">
       {/* Header */}
       <div className="flex items-center justify-between gap-4">
-        <h1 className="text-2xl font-bold tracking-tight">Nutrition</h1>
+        <div className="flex items-center gap-3">
+          <h1 className="text-2xl font-bold tracking-tight">Nutrition</h1>
+          <NutritionStreakBadge />
+        </div>
         <div className="flex items-center gap-2">
           <Button
             size="sm"

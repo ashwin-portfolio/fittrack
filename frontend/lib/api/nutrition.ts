@@ -8,6 +8,7 @@ import type {
   FoodSearchListResponse,
   NutritionCreateRequest,
   NutritionListResponse,
+  NutritionStreak,
   RecentFood,
 } from '@/types/nutrition'
 
@@ -21,6 +22,11 @@ export const nutritionApi = {
     const res = await apiClient.get<DailySummary>('/nutrition/daily-summary', {
       params: { date },
     })
+    return res.data
+  },
+
+  getStreak: async (): Promise<NutritionStreak> => {
+    const res = await apiClient.get<NutritionStreak>('/nutrition/streak')
     return res.data
   },
 
