@@ -12,6 +12,10 @@ export function formatDatetime(dateString: string): string {
   return format(parseISO(dateString), 'MMM d, yyyy · h:mm a')
 }
 
+export function formatTime(dateString: string): string {
+  return format(parseISO(dateString), 'h:mm a')
+}
+
 export function formatRelative(dateString: string): string {
   return formatDistanceToNow(parseISO(dateString), { addSuffix: true })
 }

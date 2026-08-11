@@ -8,6 +8,7 @@ import { RecentActivity } from '@/components/dashboard/RecentActivity'
 import { WeightTrendChart } from '@/components/dashboard/WeightTrendChart'
 import { WorkoutFrequencyChart } from '@/components/dashboard/WorkoutFrequencyChart'
 import { CalorieChart } from '@/components/dashboard/CalorieChart'
+import { WaterWidget } from '@/components/dashboard/WaterWidget'
 import {
   useCaloriesChart,
   useDashboardSummary,
@@ -106,7 +107,7 @@ export function DashboardView() {
       <GoalCard />
 
       {/* Nutrition stats */}
-      <div className="grid gap-3 grid-cols-2">
+      <div className="grid gap-3 grid-cols-2 lg:grid-cols-3">
         <StatCard
           title="Calories Today"
           value={summary != null ? formatCalories(summary.calories_today) : null}
@@ -121,6 +122,9 @@ export function DashboardView() {
           icon={<Zap className="h-4 w-4" />}
           isLoading={summaryLoading}
         />
+        <div className="col-span-2 lg:col-span-1">
+          <WaterWidget />
+        </div>
       </div>
 
       {/* Charts row 1 */}

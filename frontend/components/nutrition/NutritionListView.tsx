@@ -8,6 +8,8 @@ import { Skeleton } from '@/components/ui/skeleton'
 import { NutritionDaySummary } from './NutritionDaySummary'
 import { MealSection } from './MealSection'
 import { SetCalorieGoalDialog } from './SetCalorieGoalDialog'
+import { WaterDaySummary } from '@/components/water/WaterDaySummary'
+import { WeeklyCalorieSummary } from './WeeklyCalorieSummary'
 import { useNutritionEntries, useDailySummary, useCalorieGoal } from '@/hooks/useNutrition'
 import type { MealType, NutritionEntry } from '@/types/nutrition'
 
@@ -121,6 +123,9 @@ export function NutritionListView() {
       {/* Daily summary */}
       <NutritionDaySummary summary={summary} goal={goal} isLoading={loadingSummary} />
 
+      {/* Water tracking */}
+      <WaterDaySummary date={date} />
+
       {/* Meal sections */}
       {loadingEntries ? (
         <div className="space-y-4">
@@ -155,6 +160,9 @@ export function NutritionListView() {
           </Link>
         </div>
       )}
+
+      {/* Weekly calorie breakdown */}
+      <WeeklyCalorieSummary />
 
       <SetCalorieGoalDialog open={goalOpen} onOpenChange={setGoalOpen} />
     </div>

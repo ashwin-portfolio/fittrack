@@ -1,4 +1,7 @@
+import smtplib
 import sys
+from email.mime.multipart import MIMEMultipart
+from email.mime.text import MIMEText
 
 from app.core.config import settings
 
@@ -34,7 +37,7 @@ _VERIFY_HTML = """\
 
 
 def _send(to: str, subject: str, html: str) -> None:
-    if not settings.RESEND_API_KEY:
+    if not settings.SMTP_USER or not settings.SMTP_PASSWORD:
         # Development fallback — print the email to stderr so the token is visible
         print(
             f"\n[DEV EMAIL]\nTo: {to}\nSubject: {subject}\n\n{html}\n",
@@ -42,14 +45,16 @@ def _send(to: str, subject: str, html: str) -> None:
         )
         return
 
-    import resend  # type: ignore[import-untyped]
-    resend.api_key = settings.RESEND_API_KEY
-    resend.Emails.send({
-        "from": settings.FROM_EMAIL,
-        "to": [to],
-        "subject": subject,
-        "html": html,
-    })
+    message = MIMEMultipart("alternative")
+    message["From"] = settings.FROM_EMAIL
+    message["To"] = to
+    message["Subject"] = subject
+    message.attach(MIMEText(html, "html"))
+
+    with smtplib.SMTP(settings.SMTP_HOST, settings.SMTP_PORT) as server:
+        server.starttls()
+        server.login(settings.SMTP_USER, settings.SMTP_PASSWORD)
+        server.sendmail(settings.SMTP_USER, [to], message.as_string())
 
 
 def send_password_reset_email(to: str, token: str) -> None:

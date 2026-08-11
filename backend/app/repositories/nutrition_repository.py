@@ -92,6 +92,24 @@ class NutritionRepository:
         ).one()
         return row._asdict()
 
+    def calories_by_date_range(
+        self, db: Session, user_id: uuid.UUID, start_date: date, end_date: date
+    ) -> dict[date, float]:
+        rows = db.execute(
+            select(
+                NutritionEntry.entry_date,
+                func.coalesce(func.sum(NutritionEntry.calories), 0.0).label("total"),
+            )
+            .where(
+                NutritionEntry.user_id == user_id,
+                NutritionEntry.entry_date >= start_date,
+                NutritionEntry.entry_date <= end_date,
+                NutritionEntry.deleted_at.is_(None),
+            )
+            .group_by(NutritionEntry.entry_date)
+        ).all()
+        return {r.entry_date: r.total for r in rows}
+
     def recent_foods(
         self, db: Session, user_id: uuid.UUID, limit: int = 20
     ) -> list[NutritionEntry]:

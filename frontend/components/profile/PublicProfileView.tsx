@@ -1,11 +1,13 @@
 'use client'
 
+import { useState } from 'react'
 import { formatDistanceToNow } from 'date-fns'
 import { Dumbbell, Utensils, Weight, Users, Lock } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import { Skeleton } from '@/components/ui/skeleton'
 import { Avatar } from '@/components/shared/Avatar'
+import { FollowListSheet } from '@/components/social/FollowListSheet'
 import { usePublicProfile } from '@/hooks/useProfile'
 import { useFollow } from '@/hooks/useSocial'
 import { useAuthContext } from '@/lib/auth/context'
@@ -33,13 +35,32 @@ function ActivityRow({ activity }: { activity: RecentActivity }) {
   )
 }
 
-function StatBox({ label, value }: { label: string; value: number }) {
-  return (
-    <div className="flex flex-col items-center gap-0.5 px-4">
+function StatBox({
+  label,
+  value,
+  onClick,
+}: {
+  label: string
+  value: number
+  onClick?: () => void
+}) {
+  const inner = (
+    <>
       <span className="text-xl font-bold tabular-nums">{value}</span>
       <span className="text-xs text-muted-foreground">{label}</span>
-    </div>
+    </>
   )
+  if (onClick) {
+    return (
+      <button
+        onClick={onClick}
+        className="flex flex-col items-center gap-0.5 px-4 hover:opacity-70 transition-opacity"
+      >
+        {inner}
+      </button>
+    )
+  }
+  return <div className="flex flex-col items-center gap-0.5 px-4">{inner}</div>
 }
 
 interface PublicProfileViewProps {
@@ -50,6 +71,7 @@ export function PublicProfileView({ username }: PublicProfileViewProps) {
   const { user } = useAuthContext()
   const { data: profile, isLoading } = usePublicProfile(username)
   const follow = useFollow(username)
+  const [followSheet, setFollowSheet] = useState<'followers' | 'following' | null>(null)
 
   const isOwnProfile = user?.username === username
 
@@ -114,8 +136,8 @@ export function PublicProfileView({ username }: PublicProfileViewProps) {
       <Card>
         <CardContent className="py-4">
           <div className="flex justify-around divide-x">
-            <StatBox label="Followers" value={profile.follower_count} />
-            <StatBox label="Following" value={profile.following_count} />
+            <StatBox label="Followers" value={profile.follower_count} onClick={() => setFollowSheet('followers')} />
+            <StatBox label="Following" value={profile.following_count} onClick={() => setFollowSheet('following')} />
           </div>
         </CardContent>
       </Card>
@@ -150,6 +172,16 @@ export function PublicProfileView({ username }: PublicProfileViewProps) {
             </div>
           </CardContent>
         </Card>
+      )}
+
+      {followSheet && (
+        <FollowListSheet
+          username={username}
+          type={followSheet}
+          open={Boolean(followSheet)}
+          onOpenChange={(o) => { if (!o) setFollowSheet(null) }}
+          currentUsername={user?.username}
+        />
       )}
     </div>
   )
