@@ -66,6 +66,11 @@ class WeeklySummaryResponse(BaseModel):
     daily_goal: int | None
 
 
+class NutritionStreakResponse(BaseModel):
+    current_streak: int
+    longest_streak: int
+
+
 # ── Food database search (Open Food Facts) ────────────────────────────────────
 
 class FoodSearchResult(BaseModel):

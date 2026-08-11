@@ -16,6 +16,7 @@ from app.schemas.nutrition import (
     NutritionCreateRequest,
     NutritionListResponse,
     NutritionResponse,
+    NutritionStreakResponse,
     RecentFoodResponse,
     WeeklySummaryResponse,
 )
@@ -46,6 +47,14 @@ def get_weekly_summary(
     current_user: User = Depends(get_current_active_user),
 ):
     return nutrition_service.weekly_summary(db, current_user)
+
+
+@router.get("/streak", response_model=NutritionStreakResponse)
+def get_streak(
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_active_user),
+):
+    return nutrition_service.streak(db, current_user)
 
 
 @router.get("/search", response_model=FoodSearchListResponse)

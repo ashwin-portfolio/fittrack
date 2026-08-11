@@ -29,6 +29,11 @@ export interface DailySummary {
   entry_count: number
 }
 
+export interface NutritionStreak {
+  current_streak: number
+  longest_streak: number
+}
+
 export interface FoodSearchResult {
   food_name: string
   brand: string | null

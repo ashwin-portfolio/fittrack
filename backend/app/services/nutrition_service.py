@@ -17,10 +17,44 @@ from app.schemas.nutrition import (
     NutritionCreateRequest,
     NutritionListResponse,
     NutritionResponse,
+    NutritionStreakResponse,
     RecentFoodResponse,
     WeeklyCalorieDay,
     WeeklySummaryResponse,
 )
+
+
+def _compute_streaks(logged_dates: list[date]) -> tuple[int, int]:
+    """Return (current_streak, longest_streak) in consecutive days."""
+    if not logged_dates:
+        return 0, 0
+
+    unique_dates = sorted(set(logged_dates))
+
+    longest = 1
+    run = 1
+    for i in range(1, len(unique_dates)):
+        if (unique_dates[i] - unique_dates[i - 1]).days == 1:
+            run += 1
+        else:
+            run = 1
+        longest = max(longest, run)
+
+    date_set = set(unique_dates)
+    today = date.today()
+    if today in date_set:
+        cursor = today
+    elif (today - timedelta(days=1)) in date_set:
+        # Still "alive" until the day rolls over without today logged.
+        cursor = today - timedelta(days=1)
+    else:
+        return 0, longest
+
+    current = 0
+    while cursor in date_set:
+        current += 1
+        cursor -= timedelta(days=1)
+    return current, longest
 
 
 class NutritionService:
@@ -107,6 +141,13 @@ class NutritionService:
             total_calories=total_calories,
             average_calories=round(average_calories, 1),
             daily_goal=daily_goal,
+        )
+
+    def streak(self, db: Session, current_user: User) -> NutritionStreakResponse:
+        logged_dates = nutrition_repo.list_logged_dates(db, current_user.id)
+        current_streak, longest_streak = _compute_streaks(logged_dates)
+        return NutritionStreakResponse(
+            current_streak=current_streak, longest_streak=longest_streak
         )
 
     def recent_foods(
