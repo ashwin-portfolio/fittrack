@@ -22,9 +22,12 @@ class Settings(BaseSettings):
     # Food search
     USDA_FDC_API_KEY: str = "DEMO_KEY"
 
-    # Email (Resend)
-    RESEND_API_KEY: str | None = None
-    FROM_EMAIL: str = "FitTrack <onboarding@resend.dev>"
+    # Email (SMTP)
+    SMTP_HOST: str = "smtp.gmail.com"
+    SMTP_PORT: int = 587
+    SMTP_USER: str | None = None
+    SMTP_PASSWORD: str | None = None
+    FROM_EMAIL: str = "FitTrack <noreply@fittrack.local>"
     FRONTEND_URL: str = "http://localhost:3000"
 
     # Observability

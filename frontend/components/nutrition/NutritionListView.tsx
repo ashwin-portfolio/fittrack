@@ -2,13 +2,16 @@
 
 import { useState } from 'react'
 import Link from 'next/link'
-import { ChevronLeft, ChevronRight, Plus, Target } from 'lucide-react'
+import { BookTemplate, ChevronLeft, ChevronRight, Plus, Target } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Skeleton } from '@/components/ui/skeleton'
 import { NutritionDaySummary } from './NutritionDaySummary'
 import { MealSection } from './MealSection'
 import { SetCalorieGoalDialog } from './SetCalorieGoalDialog'
 import { NutritionStreakBadge } from './NutritionStreakBadge'
+import { MealTemplatePickerDialog } from './MealTemplatePickerDialog'
+import { WaterDaySummary } from '@/components/water/WaterDaySummary'
+import { WeeklyCalorieSummary } from './WeeklyCalorieSummary'
 import { useNutritionEntries, useDailySummary, useCalorieGoal } from '@/hooks/useNutrition'
 import type { MealType, NutritionEntry } from '@/types/nutrition'
 
@@ -40,6 +43,7 @@ export function NutritionListView() {
   const today = dateToLocal(new Date())
   const [date, setDate] = useState(today)
   const [goalOpen, setGoalOpen] = useState(false)
+  const [templatesOpen, setTemplatesOpen] = useState(false)
 
   const isToday = date === today
 
@@ -78,6 +82,15 @@ export function NutritionListView() {
           >
             <Target className="h-4 w-4 mr-1.5" />
             {goal ? `${goal.daily_calories} kcal goal` : 'Set goal'}
+          </Button>
+          <Button
+            size="sm"
+            variant="outline"
+            onClick={() => setTemplatesOpen(true)}
+            aria-label="Meal templates"
+          >
+            <BookTemplate className="h-4 w-4 mr-1.5" />
+            Templates
           </Button>
           <Link href={`/nutrition/new?date=${date}`}>
             <Button size="sm" className="gap-1.5">
@@ -125,6 +138,9 @@ export function NutritionListView() {
       {/* Daily summary */}
       <NutritionDaySummary summary={summary} goal={goal} isLoading={loadingSummary} />
 
+      {/* Water tracking */}
+      <WaterDaySummary date={date} />
+
       {/* Meal sections */}
       {loadingEntries ? (
         <div className="space-y-4">
@@ -160,7 +176,11 @@ export function NutritionListView() {
         </div>
       )}
 
+      {/* Weekly calorie breakdown */}
+      <WeeklyCalorieSummary />
+
       <SetCalorieGoalDialog open={goalOpen} onOpenChange={setGoalOpen} />
+      <MealTemplatePickerDialog date={date} open={templatesOpen} onOpenChange={setTemplatesOpen} />
     </div>
   )
 }

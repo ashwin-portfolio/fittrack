@@ -7,6 +7,7 @@ from fastapi import HTTPException, status
 from sqlalchemy.orm import Session
 
 from app.models.user import User
+from app.repositories.calorie_goal_repository import calorie_goal_repo
 from app.repositories.feed_repository import feed_repo
 from app.repositories.nutrition_repository import nutrition_repo
 from app.schemas.nutrition import (
@@ -18,6 +19,8 @@ from app.schemas.nutrition import (
     NutritionResponse,
     NutritionStreakResponse,
     RecentFoodResponse,
+    WeeklyCalorieDay,
+    WeeklySummaryResponse,
 )
 
 
@@ -101,6 +104,44 @@ class NutritionService:
     ) -> DailySummaryResponse:
         totals = nutrition_repo.daily_totals(db, current_user.id, entry_date)
         return DailySummaryResponse(date=entry_date, **totals)
+
+    def weekly_summary(
+        self, db: Session, current_user: User
+    ) -> WeeklySummaryResponse:
+        today = date.today()
+        week_start = today - timedelta(days=today.weekday())  # Monday of current week
+        week_end = week_start + timedelta(days=6)             # Sunday
+
+        calories_by_date = nutrition_repo.calories_by_date_range(
+            db, current_user.id, week_start, week_end
+        )
+        goal = calorie_goal_repo.get_for_user(db, current_user.id)
+        daily_goal = goal.daily_calories if goal else None
+
+        days = [
+            WeeklyCalorieDay(
+                date=week_start + timedelta(days=i),
+                day_label=(week_start + timedelta(days=i)).strftime("%a"),
+                calories=calories_by_date.get(week_start + timedelta(days=i), 0.0),
+                goal_calories=daily_goal,
+            )
+            for i in range(7)
+        ]
+
+        total_calories = sum(d.calories for d in days)
+        # Average over days elapsed so far this week — future days are still 0
+        # and would understate the average if divided across all 7.
+        elapsed_days = min(today, week_end).toordinal() - week_start.toordinal() + 1
+        average_calories = total_calories / elapsed_days if elapsed_days > 0 else 0.0
+
+        return WeeklySummaryResponse(
+            week_start=week_start,
+            week_end=week_end,
+            days=days,
+            total_calories=total_calories,
+            average_calories=round(average_calories, 1),
+            daily_goal=daily_goal,
+        )
 
     def streak(self, db: Session, current_user: User) -> NutritionStreakResponse:
         logged_dates = nutrition_repo.list_logged_dates(db, current_user.id)

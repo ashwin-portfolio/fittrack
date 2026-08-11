@@ -69,6 +69,22 @@ export interface CalorieGoal {
   updated_at: string
 }
 
+export interface WeeklyCalorieDay {
+  date: string             // YYYY-MM-DD
+  day_label: string        // "Mon", "Tue", ...
+  calories: number
+  goal_calories: number | null
+}
+
+export interface WeeklySummary {
+  week_start: string        // YYYY-MM-DD
+  week_end: string          // YYYY-MM-DD
+  days: WeeklyCalorieDay[]
+  total_calories: number
+  average_calories: number
+  daily_goal: number | null
+}
+
 export interface FavouriteMeal {
   id: string
   food_name: string

@@ -27,6 +27,14 @@ export function useDailySummary(date: string) {
   })
 }
 
+export function useWeeklySummary() {
+  return useQuery({
+    queryKey: ['nutrition', 'weekly-summary'],
+    queryFn: () => nutritionApi.getWeeklySummary(),
+    staleTime: STALE_2M,
+  })
+}
+
 export function useNutritionStreak() {
   return useQuery({
     queryKey: ['nutrition', 'streak'],
@@ -61,6 +69,7 @@ export function useLogMeal() {
       queryClient.invalidateQueries({ queryKey: queryKeys.nutrition.dailySummary(variables.entry_date) })
       queryClient.invalidateQueries({ queryKey: queryKeys.dashboard.summary() })
       queryClient.invalidateQueries({ queryKey: ['nutrition', 'recent'] })
+      queryClient.invalidateQueries({ queryKey: ['nutrition', 'weekly-summary'] })
       queryClient.invalidateQueries({ queryKey: ['nutrition', 'streak'] })
     },
     onError: (error) => toast.error(getApiErrorMessage(error)),
@@ -81,6 +90,7 @@ export function useSetCalorieGoal() {
     mutationFn: (daily_calories: number) => nutritionApi.setCalorieGoal(daily_calories),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['nutrition', 'calorie-goal'] })
+      queryClient.invalidateQueries({ queryKey: ['nutrition', 'weekly-summary'] })
       toast.success('Calorie goal saved.')
     },
     onError: (error) => toast.error(getApiErrorMessage(error)),
@@ -125,6 +135,7 @@ export function useDeleteMeal(date: string) {
       queryClient.invalidateQueries({ queryKey: queryKeys.nutrition.all({ date }) })
       queryClient.invalidateQueries({ queryKey: queryKeys.nutrition.dailySummary(date) })
       queryClient.invalidateQueries({ queryKey: queryKeys.dashboard.summary() })
+      queryClient.invalidateQueries({ queryKey: ['nutrition', 'weekly-summary'] })
       queryClient.invalidateQueries({ queryKey: ['nutrition', 'streak'] })
       toast.success('Entry deleted.')
     },

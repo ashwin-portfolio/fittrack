@@ -10,6 +10,7 @@ import type {
   NutritionListResponse,
   NutritionStreak,
   RecentFood,
+  WeeklySummary,
 } from '@/types/nutrition'
 
 export const nutritionApi = {
@@ -22,6 +23,11 @@ export const nutritionApi = {
     const res = await apiClient.get<DailySummary>('/nutrition/daily-summary', {
       params: { date },
     })
+    return res.data
+  },
+
+  getWeeklySummary: async (): Promise<WeeklySummary> => {
+    const res = await apiClient.get<WeeklySummary>('/nutrition/weekly-summary')
     return res.data
   },
 
