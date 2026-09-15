@@ -2,12 +2,11 @@ from __future__ import annotations
 
 import uuid
 
-from fastapi import HTTPException, status
 from sqlalchemy.orm import Session
 
 from app.models.feed import ActivityFeedItem
 from app.models.user import User
-from app.models.workout import WorkoutExercise, WorkoutSession
+from app.models.workout import WorkoutSession
 from app.repositories.feed_repository import feed_repo
 from app.repositories.social_repository import social_repo
 from app.schemas.social import (

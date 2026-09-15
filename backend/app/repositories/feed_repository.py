@@ -7,7 +7,6 @@ from sqlalchemy import func, select
 from sqlalchemy.orm import Session, selectinload
 
 from app.models.feed import ActivityFeedItem
-from app.models.profile import Profile
 from app.models.social import Follow
 from app.models.user import User
 from app.models.workout import WorkoutExercise, WorkoutSession
