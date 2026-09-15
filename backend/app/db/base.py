@@ -4,7 +4,8 @@ from app.models.base import Base  # noqa: F401
 from app.models.exercise import Exercise  # noqa: F401
 from app.models.feed import ActivityFeedItem  # noqa: F401
 from app.models.goal import Goal  # noqa: F401
-from app.models.nutrition import NutritionEntry  # noqa: F401
+from app.models.nutrition import FavoriteMeal, NutritionEntry  # noqa: F401
+from app.models.meal_template import MealTemplate, MealTemplateItem  # noqa: F401
 from app.models.profile import Profile  # noqa: F401
 from app.models.refresh_token import RefreshToken  # noqa: F401
 from app.models.social import Comment, Follow, Kudos  # noqa: F401
@@ -14,3 +15,4 @@ from app.models.workout import ExerciseSet, WorkoutExercise, WorkoutSession  # n
 from app.models.template import WorkoutTemplate, TemplateExercise, TemplateSet  # noqa: F401
 from app.models.calorie_goal import CalorieGoal  # noqa: F401
 from app.models.auth_token import AuthToken  # noqa: F401
+from app.models.water import WaterGoal, WaterLog  # noqa: F401
