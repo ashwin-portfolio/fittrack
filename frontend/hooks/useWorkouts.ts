@@ -99,10 +99,11 @@ export function useExerciseHistory(exerciseId: string | null) {
   })
 }
 
-export function usePersonalRecords() {
+export function usePersonalRecords(options?: { enabled?: boolean }) {
   return useQuery({
     queryKey: ['workouts', 'personal-records'],
     queryFn: () => workoutsApi.getPersonalRecords(),
     staleTime: 5 * 60 * 1000,
+    enabled: options?.enabled ?? true,
   })
 }

@@ -28,6 +28,8 @@ export const queryKeys = {
     goal: () => ['water', 'goal'] as const,
   },
   feed: {
+    // Prefix key — matches every feed query regardless of variant or filters.
+    all: () => ['feed'] as const,
     global: (filters?: object) => ['feed', 'global', filters] as const,
     following: (filters?: object) => ['feed', 'following', filters] as const,
   },

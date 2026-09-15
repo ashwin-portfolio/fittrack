@@ -173,6 +173,7 @@ export function EditWorkoutView({ workoutId }: EditWorkoutViewProps) {
             <ExerciseBlock
               key={field.id}
               exerciseIndex={index}
+              exerciseId={field.exercise_id}
               exerciseName={field.exercise_name}
               muscleGroup={field.muscle_group as Parameters<typeof ExerciseBlock>[0]['muscleGroup']}
               onRemove={() => remove(index)}

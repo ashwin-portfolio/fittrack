@@ -3,6 +3,8 @@
 import { useState } from 'react'
 import { TrendingUp } from 'lucide-react'
 import {
+  Bar,
+  BarChart,
   CartesianGrid,
   Line,
   LineChart,
@@ -22,6 +24,7 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import { Skeleton } from '@/components/ui/skeleton'
+import { cn } from '@/lib/utils/cn'
 import { useExerciseHistory, useLoggedExercises } from '@/hooks/useWorkouts'
 import { formatDate, formatDateShort } from '@/lib/utils/format'
 import type { ExerciseHistoryEntry } from '@/types/workout'
@@ -35,11 +38,20 @@ const RANGES = [
 
 type RangeDays = (typeof RANGES)[number]['days']
 
+const METRICS = [
+  { value: 'weight', label: 'Max weight' },
+  { value: 'volume', label: 'Volume' },
+] as const
+
+type Metric = (typeof METRICS)[number]['value']
+
 interface ChartPoint {
   label: string
   date: string
   weight_kg: number
   volume_kg: number
+  total_sets: number
+  total_reps: number
 }
 
 function ChartTooltip({ active, payload }: TooltipProps<number, string>) {
@@ -50,6 +62,9 @@ function ChartTooltip({ active, payload }: TooltipProps<number, string>) {
       <p className="text-xs text-muted-foreground">{formatDate(d.date)}</p>
       <p className="font-semibold">{d.weight_kg.toFixed(1)} kg</p>
       <p className="text-xs text-muted-foreground">Vol: {d.volume_kg.toFixed(0)} kg</p>
+      <p className="text-xs text-muted-foreground">
+        {d.total_sets} set{d.total_sets !== 1 ? 's' : ''} &middot; {d.total_reps} reps
+      </p>
     </div>
   )
 }
@@ -68,6 +83,7 @@ function filterByDays(
 export function ExerciseProgressionChart() {
   const [exerciseId, setExerciseId] = useState<string | null>(null)
   const [days, setDays] = useState<RangeDays>(null)
+  const [metric, setMetric] = useState<Metric>('weight')
 
   const { data: loggedData, isLoading: loadingExercises } = useLoggedExercises()
   const { data: historyData, isLoading: loadingHistory } = useExerciseHistory(exerciseId)
@@ -79,6 +95,8 @@ export function ExerciseProgressionChart() {
     date: e.session_date,
     weight_kg: e.max_weight_kg,
     volume_kg: e.total_volume_kg,
+    total_sets: e.total_sets,
+    total_reps: e.total_reps,
   }))
 
   const weights = chartData.map((d) => d.weight_kg)
@@ -88,6 +106,10 @@ export function ExerciseProgressionChart() {
 
   const allTimePeak = historyData?.entries.length
     ? Math.max(...historyData.entries.map((e) => e.max_weight_kg))
+    : null
+
+  const bestVolume = historyData?.entries.length
+    ? Math.max(...historyData.entries.map((e) => e.total_volume_kg))
     : null
 
   return (
@@ -154,61 +176,131 @@ export function ExerciseProgressionChart() {
           </div>
         ) : (
           <>
-            <div className="mb-4 flex gap-6 text-sm">
-              {allTimePeak !== null && (
+            <div className="mb-4 flex items-start justify-between gap-4 flex-wrap">
+              <div className="flex gap-6 text-sm">
+                {metric === 'weight'
+                  ? allTimePeak !== null && (
+                      <div>
+                        <p className="text-xs text-muted-foreground">All-time peak</p>
+                        <p className="font-semibold tabular-nums">
+                          {allTimePeak.toFixed(1)} kg
+                        </p>
+                      </div>
+                    )
+                  : bestVolume !== null && (
+                      <div>
+                        <p className="text-xs text-muted-foreground">Best volume</p>
+                        <p className="font-semibold tabular-nums">
+                          {bestVolume.toFixed(0)} kg
+                        </p>
+                      </div>
+                    )}
                 <div>
-                  <p className="text-xs text-muted-foreground">All-time peak</p>
-                  <p className="font-semibold tabular-nums">{allTimePeak.toFixed(1)} kg</p>
+                  <p className="text-xs text-muted-foreground">Total sessions</p>
+                  <p className="font-semibold tabular-nums">{historyData!.total_sessions}</p>
                 </div>
-              )}
-              <div>
-                <p className="text-xs text-muted-foreground">Total sessions</p>
-                <p className="font-semibold tabular-nums">{historyData!.total_sessions}</p>
+                {days !== null && (
+                  <div>
+                    <p className="text-xs text-muted-foreground">In range</p>
+                    <p className="font-semibold tabular-nums">{chartData.length}</p>
+                  </div>
+                )}
               </div>
-              {days !== null && (
-                <div>
-                  <p className="text-xs text-muted-foreground">In range</p>
-                  <p className="font-semibold tabular-nums">{chartData.length}</p>
-                </div>
-              )}
+
+              <div
+                role="group"
+                aria-label="Chart metric"
+                className="flex gap-1 rounded-md bg-muted p-0.5"
+              >
+                {METRICS.map((m) => (
+                  <button
+                    key={m.value}
+                    type="button"
+                    onClick={() => setMetric(m.value)}
+                    aria-pressed={metric === m.value}
+                    className={cn(
+                      'rounded px-2.5 py-1 text-xs font-medium transition-colors',
+                      metric === m.value
+                        ? 'bg-background text-foreground shadow-sm'
+                        : 'text-muted-foreground hover:text-foreground',
+                    )}
+                  >
+                    {m.label}
+                  </button>
+                ))}
+              </div>
             </div>
 
             <ResponsiveContainer width="100%" height={220}>
-              <LineChart data={chartData} margin={{ top: 4, right: 4, bottom: 0, left: -10 }}>
-                <CartesianGrid
-                  strokeDasharray="3 3"
-                  stroke="hsl(var(--border))"
-                  vertical={false}
-                />
-                <XAxis
-                  dataKey="label"
-                  tick={{ fontSize: 11, fill: 'hsl(var(--muted-foreground))' }}
-                  tickLine={false}
-                  axisLine={false}
-                  interval="preserveStartEnd"
-                />
-                <YAxis
-                  domain={[Math.max(0, minW - pad), maxW + pad]}
-                  tick={{ fontSize: 11, fill: 'hsl(var(--muted-foreground))' }}
-                  tickLine={false}
-                  axisLine={false}
-                  tickFormatter={(v: number) => `${v.toFixed(0)}`}
-                  width={34}
-                />
-                <Tooltip content={<ChartTooltip />} />
-                <Line
-                  type="monotone"
-                  dataKey="weight_kg"
-                  stroke="hsl(var(--primary))"
-                  strokeWidth={2.5}
-                  dot={
-                    chartData.length <= 30
-                      ? { r: 3, strokeWidth: 0, fill: 'hsl(var(--primary))' }
-                      : false
-                  }
-                  activeDot={{ r: 5, strokeWidth: 0, fill: 'hsl(var(--primary))' }}
-                />
-              </LineChart>
+              {metric === 'weight' ? (
+                <LineChart data={chartData} margin={{ top: 4, right: 4, bottom: 0, left: -10 }}>
+                  <CartesianGrid
+                    strokeDasharray="3 3"
+                    stroke="hsl(var(--border))"
+                    vertical={false}
+                  />
+                  <XAxis
+                    dataKey="label"
+                    tick={{ fontSize: 11, fill: 'hsl(var(--muted-foreground))' }}
+                    tickLine={false}
+                    axisLine={false}
+                    interval="preserveStartEnd"
+                  />
+                  <YAxis
+                    domain={[Math.max(0, minW - pad), maxW + pad]}
+                    tick={{ fontSize: 11, fill: 'hsl(var(--muted-foreground))' }}
+                    tickLine={false}
+                    axisLine={false}
+                    tickFormatter={(v: number) => `${v.toFixed(0)}`}
+                    width={34}
+                  />
+                  <Tooltip content={<ChartTooltip />} />
+                  <Line
+                    type="monotone"
+                    dataKey="weight_kg"
+                    stroke="hsl(var(--primary))"
+                    strokeWidth={2.5}
+                    dot={
+                      chartData.length <= 30
+                        ? { r: 3, strokeWidth: 0, fill: 'hsl(var(--primary))' }
+                        : false
+                    }
+                    activeDot={{ r: 5, strokeWidth: 0, fill: 'hsl(var(--primary))' }}
+                  />
+                </LineChart>
+              ) : (
+                <BarChart data={chartData} margin={{ top: 4, right: 4, bottom: 0, left: -10 }}>
+                  <CartesianGrid
+                    strokeDasharray="3 3"
+                    stroke="hsl(var(--border))"
+                    vertical={false}
+                  />
+                  <XAxis
+                    dataKey="label"
+                    tick={{ fontSize: 11, fill: 'hsl(var(--muted-foreground))' }}
+                    tickLine={false}
+                    axisLine={false}
+                    interval="preserveStartEnd"
+                  />
+                  <YAxis
+                    tick={{ fontSize: 11, fill: 'hsl(var(--muted-foreground))' }}
+                    tickLine={false}
+                    axisLine={false}
+                    tickFormatter={(v: number) => `${v.toFixed(0)}`}
+                    width={40}
+                  />
+                  <Tooltip
+                    content={<ChartTooltip />}
+                    cursor={{ fill: 'hsl(var(--muted))', opacity: 0.4 }}
+                  />
+                  <Bar
+                    dataKey="volume_kg"
+                    fill="hsl(var(--primary))"
+                    radius={[3, 3, 0, 0]}
+                    maxBarSize={36}
+                  />
+                </BarChart>
+              )}
             </ResponsiveContainer>
           </>
         )}

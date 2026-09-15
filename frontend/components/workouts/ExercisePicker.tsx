@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { Loader2, Plus, Search, X } from 'lucide-react'
+import { Loader2, Plus, Search, Trophy, X } from 'lucide-react'
 import {
   Sheet,
   SheetContent,
@@ -12,6 +12,7 @@ import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 import { Skeleton } from '@/components/ui/skeleton'
 import { useExercises, useCreateExercise } from '@/hooks/useExercises'
+import { usePersonalRecords } from '@/hooks/useWorkouts'
 import { MUSCLE_GROUP_FILTER, MUSCLE_GROUP_LABELS } from '@/lib/constants/workout'
 import { cn } from '@/lib/utils/cn'
 import type { Exercise, MuscleGroup } from '@/types/workout'
@@ -35,6 +36,12 @@ export function ExercisePicker({ open, onOpenChange, onSelect }: ExercisePickerP
     limit: 150,
   })
   const createExercise = useCreateExercise()
+
+  // Only fetched while the picker is open; shared cache with the Progress page.
+  const { data: prData } = usePersonalRecords({ enabled: open })
+  const prByExercise = new Map(
+    (prData?.records ?? []).map((pr) => [pr.exercise_id, pr.max_weight_kg]),
+  )
 
   const exercises = data?.exercises ?? []
 
@@ -182,20 +189,32 @@ export function ExercisePicker({ open, onOpenChange, onSelect }: ExercisePickerP
                   )}
                 </div>
               ) : (
-                exercises.map((exercise) => (
-                  <button
-                    key={exercise.id}
-                    onClick={() => handleSelect(exercise)}
-                    className="w-full flex items-center gap-3 rounded-md px-3 py-2.5 text-left hover:bg-muted transition-colors"
-                  >
-                    <div className="flex-1 min-w-0">
-                      <p className="text-sm font-medium truncate">{exercise.name}</p>
-                      <p className="text-xs text-muted-foreground">
-                        {MUSCLE_GROUP_LABELS[exercise.muscle_group]}
-                      </p>
-                    </div>
-                  </button>
-                ))
+                exercises.map((exercise) => {
+                  const pr = prByExercise.get(exercise.id)
+                  return (
+                    <button
+                      key={exercise.id}
+                      onClick={() => handleSelect(exercise)}
+                      className="w-full flex items-center gap-3 rounded-md px-3 py-2.5 text-left hover:bg-muted transition-colors"
+                    >
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-medium truncate">{exercise.name}</p>
+                        <p className="text-xs text-muted-foreground">
+                          {MUSCLE_GROUP_LABELS[exercise.muscle_group]}
+                        </p>
+                      </div>
+                      {pr !== undefined && (
+                        <span
+                          className="flex items-center gap-1 text-xs font-medium text-amber-600 dark:text-amber-500 shrink-0 tabular-nums"
+                          title={`Personal record: ${pr} kg`}
+                        >
+                          <Trophy className="h-3.5 w-3.5" />
+                          {pr} kg
+                        </span>
+                      )}
+                    </button>
+                  )
+                })
               )}
             </div>
 
