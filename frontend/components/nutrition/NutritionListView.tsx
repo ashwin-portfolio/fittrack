@@ -11,6 +11,7 @@ import { SetCalorieGoalDialog } from './SetCalorieGoalDialog'
 import { NutritionStreakBadge } from './NutritionStreakBadge'
 import { MealTemplatePickerDialog } from './MealTemplatePickerDialog'
 import { WaterDaySummary } from '@/components/water/WaterDaySummary'
+import { WaterHistoryChart } from '@/components/water/WaterHistoryChart'
 import { WeeklyCalorieSummary } from './WeeklyCalorieSummary'
 import { useNutritionEntries, useDailySummary, useCalorieGoal } from '@/hooks/useNutrition'
 import type { MealType, NutritionEntry } from '@/types/nutrition'
@@ -178,6 +179,9 @@ export function NutritionListView() {
 
       {/* Weekly calorie breakdown */}
       <WeeklyCalorieSummary />
+
+      {/* Water intake over time */}
+      <WaterHistoryChart />
 
       <SetCalorieGoalDialog open={goalOpen} onOpenChange={setGoalOpen} />
       <MealTemplatePickerDialog date={date} open={templatesOpen} onOpenChange={setTemplatesOpen} />

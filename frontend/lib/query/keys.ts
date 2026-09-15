@@ -24,7 +24,10 @@ export const queryKeys = {
     history: (days?: number) => ['weight', 'history', days] as const,
   },
   water: {
+    // Prefix key — matches every water query (summary, history, goal).
+    all: () => ['water'] as const,
     dailySummary: (date: string) => ['water', 'daily-summary', date] as const,
+    history: (days: number) => ['water', 'history', days] as const,
     goal: () => ['water', 'goal'] as const,
   },
   feed: {

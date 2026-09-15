@@ -38,6 +38,7 @@ from app.models.exercise import Exercise
 from app.models.feed import ActivityFeedItem
 from app.models.profile import Profile
 from app.models.social import Follow
+from app.models.water import WaterGoal, WaterLog
 from app.models.user import User
 from app.models.workout import ExerciseSet, WorkoutExercise, WorkoutSession
 from app.repositories.profile_repository import _avatar_color
@@ -57,6 +58,12 @@ PROGRESSION = {
 
 SESSION_COUNT = 8
 DAYS_BETWEEN_SESSIONS = 7
+
+WATER_GOAL_ML = 2000
+# Trailing daily totals (ml), oldest first — deliberately uneven, including a
+# zero day, so the history chart has something other than a flat line to show.
+WATER_DAILY_ML = [1500, 2250, 0, 1750, 2500, 2000, 1250, 2750, 1000, 2000,
+                  2250, 1500, 2500, 1750]
 
 
 def _upsert_user(db, username: str, password: str, email: str, full_name: str) -> User:
@@ -176,6 +183,36 @@ def _seed_workouts(db, user: User, *, share_to_feed: bool) -> None:
           + (" (shared to feed)" if share_to_feed else ""))
 
 
+def _seed_water(db, user: User) -> None:
+    existing = db.scalar(
+        select(func.count()).select_from(WaterLog).where(WaterLog.user_id == user.id)
+    )
+    if existing:
+        print(f"  {user.username} already has {existing} water logs — skipping")
+        return
+
+    if db.scalar(select(WaterGoal).where(WaterGoal.user_id == user.id)) is None:
+        db.add(WaterGoal(user_id=user.id, daily_target_ml=WATER_GOAL_ML))
+
+    today = date.today()
+    logged = 0
+
+    for offset, total_ml in enumerate(reversed(WATER_DAILY_ML)):
+        if total_ml == 0:
+            continue
+        log_date = today - timedelta(days=offset)
+        # Split the day's total into realistic glass-sized entries.
+        remaining = total_ml
+        while remaining > 0:
+            amount = min(250, remaining)
+            db.add(WaterLog(user_id=user.id, log_date=log_date, amount_ml=amount))
+            remaining -= amount
+        logged += 1
+
+    db.flush()
+    print(f"  seeded water for {logged} days for {user.username}")
+
+
 def _follow(db, follower: User, followed: User) -> None:
     exists = db.scalar(
         select(Follow).where(
@@ -209,6 +246,8 @@ def main() -> None:
         # activity to give kudos to.
         _seed_workouts(db, users["admin"], share_to_feed=False)
         _seed_workouts(db, users["demo"], share_to_feed=True)
+
+        _seed_water(db, users["admin"])
 
         _follow(db, users["admin"], users["demo"])
 

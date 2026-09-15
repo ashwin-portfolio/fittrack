@@ -1,9 +1,20 @@
 import { apiClient } from '@/lib/api/client'
-import type { LogWaterRequest, WaterDailySummary, WaterEntry, WaterGoal } from '@/types/water'
+import type {
+  LogWaterRequest,
+  WaterDailySummary,
+  WaterEntry,
+  WaterGoal,
+  WaterHistory,
+} from '@/types/water'
 
 export const waterApi = {
   getDailySummary: async (date: string): Promise<WaterDailySummary> => {
     const res = await apiClient.get<WaterDailySummary>('/water/daily-summary', { params: { date } })
+    return res.data
+  },
+
+  getHistory: async (days: number): Promise<WaterHistory> => {
+    const res = await apiClient.get<WaterHistory>('/water/history', { params: { days } })
     return res.data
   },
 

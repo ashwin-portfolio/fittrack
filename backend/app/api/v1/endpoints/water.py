@@ -10,6 +10,7 @@ from app.schemas.water import (
     WaterDailySummaryResponse,
     WaterGoalRequest,
     WaterGoalResponse,
+    WaterHistoryResponse,
     WaterLogRequest,
     WaterLogResponse,
 )
@@ -28,6 +29,15 @@ def get_daily_summary(
 ):
     target = date or date_cls.today()
     return water_service.daily_summary(db, current_user, target)
+
+
+@router.get("/history", response_model=WaterHistoryResponse)
+def get_history(
+    days: int = Query(default=7, ge=1, le=90, description="Trailing window ending today"),
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_active_user),
+):
+    return water_service.history(db, current_user, days)
 
 
 @router.get("/goal", response_model=WaterGoalResponse)

@@ -3,7 +3,7 @@ from __future__ import annotations
 import uuid
 from datetime import date
 
-from sqlalchemy import select
+from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
 from app.models.water import WaterGoal, WaterLog
@@ -28,6 +28,24 @@ class WaterRepository:
                 .order_by(WaterLog.created_at.asc())
             ).all()
         )
+
+    def totals_by_date_range(
+        self, db: Session, user_id: uuid.UUID, start_date: date, end_date: date
+    ) -> dict[date, int]:
+        """Summed ml per day. Days with no logs are absent, not zero."""
+        rows = db.execute(
+            select(
+                WaterLog.log_date,
+                func.coalesce(func.sum(WaterLog.amount_ml), 0).label("total"),
+            )
+            .where(
+                WaterLog.user_id == user_id,
+                WaterLog.log_date >= start_date,
+                WaterLog.log_date <= end_date,
+            )
+            .group_by(WaterLog.log_date)
+        ).all()
+        return {r.log_date: int(r.total) for r in rows}
 
     def get_by_id(self, db: Session, entry_id: uuid.UUID) -> WaterLog | None:
         return db.scalar(select(WaterLog).where(WaterLog.id == entry_id))
