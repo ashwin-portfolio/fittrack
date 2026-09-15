@@ -146,7 +146,12 @@ activemq-data/
 *.sage.py
 
 # Environments
+# `.env` alone matches only that exact name — backups and variants like
+# .env.bak3 or .env.local slipped through and were one `git add .` from being
+# committed. Match every variant, then re-admit the checked-in templates.
 .env
+.env.*
+!.env.example
 .envrc
 .venv
 env/
