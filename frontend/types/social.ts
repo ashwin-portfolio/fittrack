@@ -59,7 +59,9 @@ export interface FollowListItem {
 
 export interface FollowListResponse {
   items: FollowListItem[]
-  total: number
-  skip: number
-  limit: number
+  /** Pass back as `cursor` for the next page; null on the last page. */
+  next_cursor: string | null
+  has_more: boolean
+  /** Only present on the first page — later pages skip the COUNT. */
+  total: number | null
 }

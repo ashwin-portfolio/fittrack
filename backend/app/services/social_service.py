@@ -1,10 +1,12 @@
 from __future__ import annotations
 
 import uuid
+from datetime import datetime
 
 from fastapi import HTTPException, status
 from sqlalchemy.orm import Session
 
+from app.core.cursor import decode_cursor, encode_cursor
 from app.models.user import User
 from app.repositories.feed_repository import feed_repo
 from app.repositories.social_repository import social_repo
@@ -242,37 +244,79 @@ class SocialService:
             return f"{fi.weight_log.weight_kg} kg logged"
         return fi.activity_type
 
+    def _follow_list_page(
+        self,
+        db: Session,
+        current_user: User,
+        username: str,
+        *,
+        direction: str,          # "followers" | "following"
+        cursor: str | None,
+        limit: int,
+    ) -> FollowerListResponse:
+        target = user_repo.get_by_username(db, username)
+        if target is None:
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found.")
+
+        decoded: tuple[datetime, uuid.UUID] | None = None
+        if cursor:
+            try:
+                decoded = decode_cursor(cursor)
+            except ValueError as exc:
+                raise HTTPException(
+                    status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid cursor."
+                ) from exc
+
+        fetch = (
+            social_repo.get_followers if direction == "followers" else social_repo.get_following
+        )
+        rows, has_more = fetch(db, target.id, cursor=decoded, limit=limit)
+
+        # Only the first request pays for the count; later pages already have it.
+        total = None
+        if decoded is None:
+            total = (
+                social_repo.follower_count(db, target.id)
+                if direction == "followers"
+                else social_repo.following_count(db, target.id)
+            )
+
+        if not rows:
+            return FollowerListResponse(items=[], next_cursor=None, has_more=False, total=total)
+
+        is_following_set = social_repo.batch_is_following(
+            db, current_user.id, [r.user.id for r in rows]
+        )
+        last = rows[-1]
+
+        return FollowerListResponse(
+            items=[
+                FollowerListItem(
+                    username=r.user.username,
+                    full_name=r.profile.full_name,
+                    avatar_color=r.profile.avatar_color,
+                    bio=r.profile.bio,
+                    is_following=r.user.id in is_following_set,
+                )
+                for r in rows
+            ],
+            next_cursor=(
+                encode_cursor(last.follow_created_at, last.follow_id) if has_more else None
+            ),
+            has_more=has_more,
+            total=total,
+        )
+
     def list_followers(
         self,
         db: Session,
         current_user: User,
         username: str,
-        skip: int = 0,
+        cursor: str | None = None,
         limit: int = 20,
     ) -> FollowerListResponse:
-        target = user_repo.get_by_username(db, username)
-        if target is None:
-            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found.")
-        pairs, total = social_repo.get_followers(db, target.id, skip=skip, limit=limit)
-        if not pairs:
-            return FollowerListResponse(items=[], total=total, skip=skip, limit=limit)
-
-        user_ids = [u.id for u, _ in pairs]
-        is_following_set = social_repo.batch_is_following(db, current_user.id, user_ids)
-        return FollowerListResponse(
-            items=[
-                FollowerListItem(
-                    username=u.username,
-                    full_name=p.full_name,
-                    avatar_color=p.avatar_color,
-                    bio=p.bio,
-                    is_following=u.id in is_following_set,
-                )
-                for u, p in pairs
-            ],
-            total=total,
-            skip=skip,
-            limit=limit,
+        return self._follow_list_page(
+            db, current_user, username, direction="followers", cursor=cursor, limit=limit
         )
 
     def list_following(
@@ -280,32 +324,11 @@ class SocialService:
         db: Session,
         current_user: User,
         username: str,
-        skip: int = 0,
+        cursor: str | None = None,
         limit: int = 20,
     ) -> FollowerListResponse:
-        target = user_repo.get_by_username(db, username)
-        if target is None:
-            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found.")
-        pairs, total = social_repo.get_following(db, target.id, skip=skip, limit=limit)
-        if not pairs:
-            return FollowerListResponse(items=[], total=total, skip=skip, limit=limit)
-
-        user_ids = [u.id for u, _ in pairs]
-        is_following_set = social_repo.batch_is_following(db, current_user.id, user_ids)
-        return FollowerListResponse(
-            items=[
-                FollowerListItem(
-                    username=u.username,
-                    full_name=p.full_name,
-                    avatar_color=p.avatar_color,
-                    bio=p.bio,
-                    is_following=u.id in is_following_set,
-                )
-                for u, p in pairs
-            ],
-            total=total,
-            skip=skip,
-            limit=limit,
+        return self._follow_list_page(
+            db, current_user, username, direction="following", cursor=cursor, limit=limit
         )
 
 

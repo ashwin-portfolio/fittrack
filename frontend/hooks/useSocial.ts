@@ -1,6 +1,12 @@
 'use client'
 
-import { useMutation, useQuery, useQueryClient, type InfiniteData } from '@tanstack/react-query'
+import {
+  useInfiniteQuery,
+  useMutation,
+  useQuery,
+  useQueryClient,
+  type InfiniteData,
+} from '@tanstack/react-query'
 import { toast } from 'sonner'
 import { socialApi } from '@/lib/api/social'
 import { getApiErrorMessage } from '@/lib/api/client'
@@ -110,19 +116,33 @@ export function useFollow(username: string) {
   })
 }
 
+const FOLLOW_PAGE_SIZE = 20
+
 export function useFollowers(username: string, options?: { enabled?: boolean }) {
-  return useQuery({
+  return useInfiniteQuery({
     queryKey: queryKeys.social.followers(username),
-    queryFn: () => socialApi.getFollowers(username),
+    queryFn: ({ pageParam }) =>
+      socialApi.getFollowers(username, {
+        cursor: pageParam as string | undefined,
+        limit: FOLLOW_PAGE_SIZE,
+      }),
+    initialPageParam: undefined as string | undefined,
+    getNextPageParam: (lastPage) => lastPage.next_cursor ?? undefined,
     enabled: Boolean(username) && (options?.enabled ?? true),
     staleTime: 0,
   })
 }
 
 export function useFollowing(username: string, options?: { enabled?: boolean }) {
-  return useQuery({
+  return useInfiniteQuery({
     queryKey: queryKeys.social.following(username),
-    queryFn: () => socialApi.getFollowingList(username),
+    queryFn: ({ pageParam }) =>
+      socialApi.getFollowingList(username, {
+        cursor: pageParam as string | undefined,
+        limit: FOLLOW_PAGE_SIZE,
+      }),
+    initialPageParam: undefined as string | undefined,
+    getNextPageParam: (lastPage) => lastPage.next_cursor ?? undefined,
     enabled: Boolean(username) && (options?.enabled ?? true),
     staleTime: 0,
   })

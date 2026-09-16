@@ -59,6 +59,14 @@ PROGRESSION = {
 SESSION_COUNT = 8
 DAYS_BETWEEN_SESSIONS = 7
 
+# Enough filler accounts to push the follow lists past one page (limit 20),
+# so infinite scroll and cursor paging have something to page through. They are
+# all created in one transaction and therefore share a created_at to the
+# microsecond — which is exactly the tie the (created_at, id) cursor exists to
+# break.
+FILLER_FOLLOWERS = 45
+FILLER_FOLLOWING = 25
+
 WATER_GOAL_ML = 2000
 # Trailing daily totals (ml), oldest first — deliberately uneven, including a
 # zero day, so the history chart has something other than a flat line to show.
@@ -213,6 +221,62 @@ def _seed_water(db, user: User) -> None:
     print(f"  seeded water for {logged} days for {user.username}")
 
 
+def _seed_follow_crowd(db, target: User) -> None:
+    """Filler accounts following `target`, and `target` following some back."""
+    existing = db.scalar(
+        select(func.count()).select_from(Follow).where(Follow.following_id == target.id)
+    )
+    if existing >= FILLER_FOLLOWERS:
+        print(f"  {target.username} already has {existing} followers — skipping crowd")
+        return
+
+    created = 0
+    for i in range(1, FILLER_FOLLOWERS + 1):
+        username = f"fan{i:02d}"
+        user = db.scalar(select(User).where(User.username == username))
+        if user is None:
+            user = User(
+                email=f"{username}@fittrack.local",
+                username=username,
+                hashed_password=hash_password(username),
+                is_active=True,
+                is_email_verified=True,
+            )
+            db.add(user)
+            db.flush()
+            db.add(
+                Profile(
+                    user_id=user.id,
+                    full_name=f"Fan {i:02d}",
+                    bio=f"Filler account #{i} for pagination testing.",
+                    avatar_color=_avatar_color(username),
+                    is_public=True,
+                    onboarding_complete=True,
+                )
+            )
+            created += 1
+
+        if not db.scalar(
+            select(Follow).where(
+                Follow.follower_id == user.id, Follow.following_id == target.id
+            )
+        ):
+            db.add(Follow(follower_id=user.id, following_id=target.id))
+
+        # Follow a subset back, so the Following list pages too but differs
+        # from the Followers list.
+        if i <= FILLER_FOLLOWING and not db.scalar(
+            select(Follow).where(
+                Follow.follower_id == target.id, Follow.following_id == user.id
+            )
+        ):
+            db.add(Follow(follower_id=target.id, following_id=user.id))
+
+    db.flush()
+    print(f"  seeded {created} filler accounts; {target.username} now has "
+          f"{FILLER_FOLLOWERS} followers / {FILLER_FOLLOWING}+ following")
+
+
 def _follow(db, follower: User, followed: User) -> None:
     exists = db.scalar(
         select(Follow).where(
@@ -248,6 +312,8 @@ def main() -> None:
         _seed_workouts(db, users["demo"], share_to_feed=True)
 
         _seed_water(db, users["admin"])
+
+        _seed_follow_crowd(db, users["admin"])
 
         _follow(db, users["admin"], users["demo"])
 

@@ -38,20 +38,20 @@ def get_user_profile(
 @router.get("/{username}/followers", response_model=FollowerListResponse)
 def list_followers(
     username: str,
-    skip: int = Query(default=0, ge=0),
+    cursor: str | None = Query(default=None, description="next_cursor from the previous page"),
     limit: int = Query(default=20, ge=1, le=50),
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_active_user),
 ):
-    return social_service.list_followers(db, current_user, username, skip=skip, limit=limit)
+    return social_service.list_followers(db, current_user, username, cursor=cursor, limit=limit)
 
 
 @router.get("/{username}/following", response_model=FollowerListResponse)
 def list_following(
     username: str,
-    skip: int = Query(default=0, ge=0),
+    cursor: str | None = Query(default=None, description="next_cursor from the previous page"),
     limit: int = Query(default=20, ge=1, le=50),
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_active_user),
 ):
-    return social_service.list_following(db, current_user, username, skip=skip, limit=limit)
+    return social_service.list_following(db, current_user, username, cursor=cursor, limit=limit)

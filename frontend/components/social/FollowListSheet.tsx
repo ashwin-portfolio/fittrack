@@ -6,6 +6,7 @@ import { useQueryClient } from '@tanstack/react-query'
 import { Avatar } from '@/components/shared/Avatar'
 import { Button } from '@/components/ui/button'
 import { Skeleton } from '@/components/ui/skeleton'
+import { InfiniteScrollTrigger } from '@/components/shared/InfiniteScrollTrigger'
 import {
   Sheet,
   SheetContent,
@@ -89,7 +90,9 @@ export function FollowListSheet({
   const followingQuery = useFollowing(username, { enabled: open && type === 'following' })
 
   const query = type === 'followers' ? followersQuery : followingQuery
-  const items = query.data?.items ?? []
+  const items = query.data?.pages.flatMap((page) => page.items) ?? []
+  // total rides on the first page only; later pages send null.
+  const total = query.data?.pages[0]?.total ?? null
   const title = type === 'followers' ? 'Followers' : 'Following'
   const emptyText = type === 'followers' ? 'No followers yet.' : 'Not following anyone yet.'
 
@@ -97,7 +100,14 @@ export function FollowListSheet({
     <Sheet open={open} onOpenChange={onOpenChange}>
       <SheetContent side="bottom" className="h-[70vh] flex flex-col px-0">
         <SheetHeader className="shrink-0 px-6 pb-2">
-          <SheetTitle>{title}</SheetTitle>
+          <SheetTitle>
+            {title}
+            {total !== null && (
+              <span className="ml-2 text-sm font-normal text-muted-foreground tabular-nums">
+                {total.toLocaleString()}
+              </span>
+            )}
+          </SheetTitle>
         </SheetHeader>
 
         <div className="flex-1 overflow-y-auto px-6">
@@ -129,6 +139,11 @@ export function FollowListSheet({
                   onClose={() => onOpenChange(false)}
                 />
               ))}
+              <InfiniteScrollTrigger
+                onIntersect={query.fetchNextPage}
+                hasNextPage={query.hasNextPage ?? false}
+                isFetchingNextPage={query.isFetchingNextPage}
+              />
             </div>
           )}
         </div>
