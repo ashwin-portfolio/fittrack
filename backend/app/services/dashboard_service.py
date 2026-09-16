@@ -10,6 +10,7 @@ from app.models.nutrition import NutritionEntry
 from app.models.user import User
 from app.models.weight import WeightLog
 from app.models.workout import WorkoutExercise, WorkoutSession
+from app.services.workout_service import workout_service
 from app.schemas.dashboard import (
     ActivityItem,
     CaloriesChartResponse,
@@ -85,6 +86,7 @@ class DashboardService:
             workouts_this_week=workouts_this_week,
             calories_today=nutrition_row.calories,
             protein_today_g=nutrition_row.protein,
+            calories_burned_this_week=workout_service.calories_burned_this_week(db, user),
             recent_activities=self._recent_activities(db, user.id),
         )
 

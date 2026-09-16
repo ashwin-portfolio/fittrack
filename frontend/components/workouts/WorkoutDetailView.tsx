@@ -116,6 +116,20 @@ export function WorkoutDetailView({ workoutId }: WorkoutDetailViewProps) {
             </p>
           </div>
         )}
+        {workout.duration_minutes != null && (
+          <div>
+            <p className="text-muted-foreground text-xs">Duration</p>
+            <p className="font-semibold">{workout.duration_minutes} min</p>
+          </div>
+        )}
+        {workout.calories_burned != null && (
+          <div>
+            <p className="text-muted-foreground text-xs">Burned</p>
+            <p className="font-semibold text-orange-500">
+              {Math.round(workout.calories_burned).toLocaleString()} kcal
+            </p>
+          </div>
+        )}
         {workout.is_shared && (
           <div className="flex items-center gap-1 text-primary text-xs font-medium">
             <Share2 className="h-3 w-3" />

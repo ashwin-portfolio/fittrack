@@ -18,6 +18,9 @@ class DashboardSummaryResponse(BaseModel):
     workouts_this_week: int
     calories_today: float
     protein_today_g: float
+    # None when no weight is on record, or no session this week has a
+    # duration — an estimate needs both.
+    calories_burned_this_week: float | None
     recent_activities: list[ActivityItem]
 
 

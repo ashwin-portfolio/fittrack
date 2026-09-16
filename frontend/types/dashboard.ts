@@ -13,6 +13,8 @@ export interface DashboardSummary {
   workouts_this_week: number
   calories_today: number
   protein_today_g: number
+  /** null when no weight is on record, or no session this week has a duration. */
+  calories_burned_this_week: number | null
   recent_activities: DashboardActivity[]
 }
 

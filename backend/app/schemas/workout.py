@@ -25,6 +25,9 @@ class WorkoutCreateRequest(BaseModel):
     session_date: date
     name: str | None = Field(default=None, max_length=100)
     notes: str | None = None
+    # Whole-session duration; drives the calories-burned estimate. Capped at
+    # 12 hours to catch fat-fingered entries.
+    duration_minutes: int | None = Field(default=None, ge=1, le=720)
     is_shared: bool = False
     exercises: list[WorkoutExerciseCreate] = []
 
@@ -52,6 +55,10 @@ class WorkoutResponse(BaseModel):
     session_date: date
     name: str | None
     notes: str | None
+    duration_minutes: int | None
+    # None when the session has no duration, or the user has never logged a
+    # body weight — an estimate needs both.
+    calories_burned: float | None
     is_shared: bool
     exercises: list[WorkoutExerciseResponse]
     created_at: datetime
@@ -67,6 +74,8 @@ class WorkoutSummary(BaseModel):
     is_shared: bool
     exercise_count: int
     total_sets: int
+    duration_minutes: int | None
+    calories_burned: float | None
     created_at: datetime
 
 

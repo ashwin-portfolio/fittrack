@@ -125,7 +125,7 @@ export function DashboardView() {
       <GoalCard />
 
       {/* Nutrition stats */}
-      <div className="grid gap-3 grid-cols-2 lg:grid-cols-3">
+      <div className="grid gap-3 grid-cols-2 lg:grid-cols-4">
         <StatCard
           title="Calories Today"
           value={summary != null ? formatCalories(summary.calories_today) : null}
@@ -138,6 +138,18 @@ export function DashboardView() {
           value={summary != null ? formatMacro(summary.protein_today_g) : null}
           subtitle="grams logged"
           icon={<Zap className="h-4 w-4" />}
+          isLoading={summaryLoading}
+        />
+        <StatCard
+          title="Burned This Week"
+          value={
+            summary?.calories_burned_this_week != null
+              ? `${Math.round(summary.calories_burned_this_week).toLocaleString()} kcal`
+              : null
+          }
+          subtitle="Estimated from workouts"
+          icon={<Flame className="h-4 w-4" />}
+          valueClassName="text-orange-500"
           isLoading={summaryLoading}
         />
         <div className="col-span-2 lg:col-span-1">

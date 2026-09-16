@@ -79,6 +79,15 @@ class WeightRepository:
             ).all()
         )
 
+    def get_latest(self, db: Session, user_id: uuid.UUID) -> WeightLog | None:
+        """Most recent active entry — the body weight used for MET estimates."""
+        return db.scalar(
+            select(WeightLog)
+            .where(WeightLog.user_id == user_id, WeightLog.deleted_at.is_(None))
+            .order_by(WeightLog.log_date.desc(), WeightLog.created_at.desc())
+            .limit(1)
+        )
+
     def get_by_id(self, db: Session, entry_id: uuid.UUID) -> WeightLog | None:
         return db.scalar(
             select(WeightLog).where(

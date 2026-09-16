@@ -30,6 +30,9 @@ class WorkoutSession(Base, TimestampMixin, SoftDeleteMixin):
     session_date: Mapped[date] = mapped_column(Date)
     name: Mapped[str | None] = mapped_column(String(100))
     notes: Mapped[str | None] = mapped_column(Text)
+    # Optional — workouts logged before this existed have none, and there is no
+    # honest value to backfill. Drives the calories-burned estimate.
+    duration_minutes: Mapped[int | None] = mapped_column(SmallInteger, nullable=True)
     is_shared: Mapped[bool] = mapped_column(Boolean, default=False)
 
     # ── Relationships ────────────────────────────────────────────────────────

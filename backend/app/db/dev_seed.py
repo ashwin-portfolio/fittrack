@@ -71,6 +71,11 @@ FILLER_FOLLOWING = 25
 # streak of 1 at best. These two runs give the streak counter something real:
 # a current run ending today, and a longer historical run so `longest` and
 # `current` are distinguishable rather than coincidentally equal.
+# Duration is required for a calories-burned estimate and has no honest
+# backfill, so fixtures set one explicitly.
+SESSION_DURATION_MIN = 55
+QUICK_SESSION_DURATION_MIN = 20
+
 STREAK_CURRENT_RUN = 4       # days back from today, inclusive
 STREAK_PAST_RUN = (20, 26)   # inclusive range of days back
 
@@ -154,6 +159,7 @@ def _seed_workouts(db, user: User, *, share_to_feed: bool) -> None:
             user_id=user.id,
             session_date=today - timedelta(days=offset),
             name=f"Session {i + 1}",
+            duration_minutes=SESSION_DURATION_MIN,
             is_shared=share_to_feed,
         )
         db.add(session)
@@ -232,6 +238,7 @@ def _seed_streak_runs(db, user: User) -> None:
             user_id=user.id,
             session_date=session_date,
             name="Quick session",
+            duration_minutes=QUICK_SESSION_DURATION_MIN,
             is_shared=False,
         )
         db.add(session)

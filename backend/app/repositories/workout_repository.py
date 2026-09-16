@@ -29,6 +29,7 @@ class WorkoutRepository:
         name: str | None,
         notes: str | None,
         is_shared: bool,
+        duration_minutes: int | None = None,
     ) -> WorkoutSession:
         session = WorkoutSession(
             user_id=user_id,
@@ -36,6 +37,7 @@ class WorkoutRepository:
             name=name,
             notes=notes,
             is_shared=is_shared,
+            duration_minutes=duration_minutes,
         )
         db.add(session)
         db.flush()
@@ -155,6 +157,28 @@ class WorkoutRepository:
         rows = db.execute(sql, {"user_id": str(user_id)}).mappings().all()
         return [dict(r) for r in rows]
 
+
+    def list_for_week(self, db: Session, user_id: uuid.UUID) -> list[WorkoutSession]:
+        """This week's sessions with exercises loaded, for calorie totals."""
+        today = date.today()
+        monday = today - timedelta(days=today.weekday())
+        return list(
+            db.scalars(
+                select(WorkoutSession)
+                .options(
+                    selectinload(WorkoutSession.workout_exercises)
+                    .selectinload(WorkoutExercise.exercise),
+                    selectinload(WorkoutSession.workout_exercises)
+                    .selectinload(WorkoutExercise.sets),
+                )
+                .where(
+                    WorkoutSession.user_id == user_id,
+                    WorkoutSession.session_date >= monday,
+                    WorkoutSession.session_date <= today,
+                    WorkoutSession.deleted_at.is_(None),
+                )
+            ).all()
+        )
 
     def count_this_week(self, db: Session, user_id: uuid.UUID) -> int:
         today = date.today()
