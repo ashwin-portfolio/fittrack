@@ -7,6 +7,7 @@ import { Skeleton } from '@/components/ui/skeleton'
 import { PageHeader } from '@/components/layout/PageHeader'
 import { EmptyState } from '@/components/shared/EmptyState'
 import { WorkoutCard } from '@/components/workouts/WorkoutCard'
+import { WorkoutStreakBadge } from '@/components/workouts/WorkoutStreakBadge'
 import { useWorkoutList } from '@/hooks/useWorkouts'
 
 export function WorkoutsListView() {
@@ -26,6 +27,7 @@ export function WorkoutsListView() {
       <PageHeader
         title="Workouts"
         subtitle={!isLoading && total > 0 ? `${total} total` : undefined}
+        badge={<WorkoutStreakBadge />}
         action={
           <Button asChild>
             <Link href="/workouts/new">

@@ -9,6 +9,7 @@ import { WeightTrendChart } from '@/components/dashboard/WeightTrendChart'
 import { WorkoutFrequencyChart } from '@/components/dashboard/WorkoutFrequencyChart'
 import { CalorieChart } from '@/components/dashboard/CalorieChart'
 import { WaterWidget } from '@/components/dashboard/WaterWidget'
+import { useWorkoutStreak } from '@/hooks/useWorkouts'
 import {
   useCaloriesChart,
   useDashboardSummary,
@@ -33,6 +34,7 @@ function getGreeting(): string {
 export function DashboardView() {
   const { profile } = useAuthContext()
   const { data: summary, isLoading: summaryLoading } = useDashboardSummary()
+  const { data: workoutStreak, isLoading: streakLoading } = useWorkoutStreak()
   const { data: weightChart, isLoading: weightLoading } = useWeightChart(30)
   const { data: workoutsChart, isLoading: workoutsLoading } = useWorkoutsChart(8)
   const { data: caloriesChart, isLoading: caloriesLoading } = useCaloriesChart(7)
@@ -55,7 +57,7 @@ export function DashboardView() {
       <PageHeader title="Dashboard" subtitle={subtitle} />
 
       {/* Primary stats */}
-      <div className="grid gap-3 grid-cols-2 lg:grid-cols-4">
+      <div className="grid gap-3 grid-cols-2 lg:grid-cols-5">
         <StatCard
           title="Current Weight"
           value={
@@ -100,6 +102,22 @@ export function DashboardView() {
           subtitle="Mon – Sun"
           icon={<Dumbbell className="h-4 w-4" />}
           isLoading={summaryLoading}
+        />
+        <StatCard
+          title="Workout Streak"
+          value={
+            workoutStreak != null
+              ? `${workoutStreak.current_streak} day${workoutStreak.current_streak !== 1 ? 's' : ''}`
+              : null
+          }
+          subtitle={
+            workoutStreak != null
+              ? `Longest ${workoutStreak.longest_streak}`
+              : undefined
+          }
+          icon={<Flame className="h-4 w-4" />}
+          valueClassName={workoutStreak?.current_streak ? 'text-orange-500' : undefined}
+          isLoading={streakLoading}
         />
       </div>
 

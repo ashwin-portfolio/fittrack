@@ -67,6 +67,13 @@ DAYS_BETWEEN_SESSIONS = 7
 FILLER_FOLLOWERS = 45
 FILLER_FOLLOWING = 25
 
+# The weekly sessions above never fall on consecutive days, so they produce a
+# streak of 1 at best. These two runs give the streak counter something real:
+# a current run ending today, and a longer historical run so `longest` and
+# `current` are distinguishable rather than coincidentally equal.
+STREAK_CURRENT_RUN = 4       # days back from today, inclusive
+STREAK_PAST_RUN = (20, 26)   # inclusive range of days back
+
 WATER_GOAL_ML = 2000
 # Trailing daily totals (ml), oldest first — deliberately uneven, including a
 # zero day, so the history chart has something other than a flat line to show.
@@ -191,6 +198,65 @@ def _seed_workouts(db, user: User, *, share_to_feed: bool) -> None:
           + (" (shared to feed)" if share_to_feed else ""))
 
 
+def _seed_streak_runs(db, user: User) -> None:
+    """Fill in consecutive-day workouts so streaks are visible."""
+    exercise = db.scalar(select(Exercise).where(Exercise.name == "Push-Up"))
+    if exercise is None:
+        print("  !! 'Push-Up' not found — skipping streak runs")
+        return
+
+    today = date.today()
+    wanted = set(range(STREAK_CURRENT_RUN)) | set(
+        range(STREAK_PAST_RUN[0], STREAK_PAST_RUN[1] + 1)
+    )
+
+    existing_dates = {
+        d
+        for (d,) in db.execute(
+            select(WorkoutSession.session_date).where(
+                WorkoutSession.user_id == user.id,
+                WorkoutSession.deleted_at.is_(None),
+            )
+        ).all()
+    }
+
+    added = 0
+    for offset in sorted(wanted, reverse=True):
+        session_date = today - timedelta(days=offset)
+        # A date already covered by a weekly session still counts toward the
+        # run — only fill the gaps.
+        if session_date in existing_dates:
+            continue
+
+        session = WorkoutSession(
+            user_id=user.id,
+            session_date=session_date,
+            name="Quick session",
+            is_shared=False,
+        )
+        db.add(session)
+        db.flush()
+
+        we = WorkoutExercise(session_id=session.id, exercise_id=exercise.id, order_index=0)
+        db.add(we)
+        db.flush()
+        for set_number in range(1, 4):
+            db.add(
+                ExerciseSet(
+                    workout_exercise_id=we.id,
+                    set_number=set_number,
+                    reps=20,
+                    weight_kg=0.0,
+                )
+            )
+        added += 1
+
+    db.flush()
+    print(f"  seeded {added} streak-run workouts for {user.username} "
+          f"(current run {STREAK_CURRENT_RUN}d, past run "
+          f"{STREAK_PAST_RUN[1] - STREAK_PAST_RUN[0] + 1}d)")
+
+
 def _seed_water(db, user: User) -> None:
     existing = db.scalar(
         select(func.count()).select_from(WaterLog).where(WaterLog.user_id == user.id)
@@ -310,6 +376,8 @@ def main() -> None:
         # activity to give kudos to.
         _seed_workouts(db, users["admin"], share_to_feed=False)
         _seed_workouts(db, users["demo"], share_to_feed=True)
+
+        _seed_streak_runs(db, users["admin"])
 
         _seed_water(db, users["admin"])
 

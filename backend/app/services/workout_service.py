@@ -5,6 +5,7 @@ import uuid
 from fastapi import HTTPException, status
 from sqlalchemy.orm import Session
 
+from app.core.streaks import compute_streaks
 from app.models.user import User
 from app.models.workout import WorkoutSession
 from app.repositories.exercise_repository import exercise_repo
@@ -22,6 +23,7 @@ from app.schemas.workout import (
     WorkoutExerciseResponse,
     WorkoutListResponse,
     WorkoutResponse,
+    WorkoutStreakResponse,
     WorkoutSummary,
 )
 
@@ -295,6 +297,13 @@ class WorkoutService:
             db.refresh(we, ["exercise", "sets"])
 
         return _build_response(new_session)
+
+    def streak(self, db: Session, current_user: User) -> WorkoutStreakResponse:
+        logged_dates = workout_repo.list_workout_dates(db, current_user.id)
+        current_streak, longest_streak = compute_streaks(logged_dates)
+        return WorkoutStreakResponse(
+            current_streak=current_streak, longest_streak=longest_streak
+        )
 
     def personal_records(self, db: Session, current_user: User) -> PersonalRecordsResponse:
         rows = workout_repo.get_personal_records(db, current_user.id)

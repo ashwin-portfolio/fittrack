@@ -1,10 +1,10 @@
 'use client'
 
 import { StreakBadge } from '@/components/shared/StreakBadge'
-import { useNutritionStreak } from '@/hooks/useNutrition'
+import { useWorkoutStreak } from '@/hooks/useWorkouts'
 
-export function NutritionStreakBadge() {
-  const { data: streak, isLoading } = useNutritionStreak()
+export function WorkoutStreakBadge() {
+  const { data: streak, isLoading } = useWorkoutStreak()
 
   if (isLoading || !streak) return null
 
@@ -12,7 +12,7 @@ export function NutritionStreakBadge() {
     <StreakBadge
       currentStreak={streak.current_streak}
       longestStreak={streak.longest_streak}
-      label="nutrition"
+      label="workout"
     />
   )
 }

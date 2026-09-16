@@ -105,6 +105,13 @@ class ExerciseHistoryResponse(BaseModel):
     total_sessions: int
 
 
+# ── Streaks ───────────────────────────────────────────────────────────────────
+
+class WorkoutStreakResponse(BaseModel):
+    current_streak: int
+    longest_streak: int
+
+
 # ── Personal Records ──────────────────────────────────────────────────────────
 
 class PersonalRecord(BaseModel):

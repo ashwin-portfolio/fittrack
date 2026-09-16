@@ -119,6 +119,11 @@ export interface ExerciseHistoryResponse {
   total_sessions: number
 }
 
+export interface WorkoutStreak {
+  current_streak: number
+  longest_streak: number
+}
+
 export interface PersonalRecord {
   exercise_id: string
   exercise_name: string

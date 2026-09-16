@@ -171,6 +171,18 @@ class WorkoutRepository:
         )
         return result or 0
 
+    def list_workout_dates(self, db: Session, user_id: uuid.UUID) -> list[date]:
+        """Distinct dates with at least one active workout, for streak calculation."""
+        rows = db.execute(
+            select(WorkoutSession.session_date)
+            .where(
+                WorkoutSession.user_id == user_id,
+                WorkoutSession.deleted_at.is_(None),
+            )
+            .distinct()
+        ).all()
+        return [r.session_date for r in rows]
+
     def get_logged_exercises(self, db: Session, user_id: uuid.UUID) -> list[dict]:
         sql = text("""
             SELECT
