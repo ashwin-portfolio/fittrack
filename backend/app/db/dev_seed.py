@@ -39,6 +39,7 @@ from app.models.feed import ActivityFeedItem
 from app.models.profile import Profile
 from app.models.social import Follow
 from app.models.water import WaterGoal, WaterLog
+from app.models.weight import WeightLog
 from app.models.user import User
 from app.models.workout import ExerciseSet, WorkoutExercise, WorkoutSession
 from app.repositories.profile_repository import _avatar_color
@@ -78,6 +79,12 @@ QUICK_SESSION_DURATION_MIN = 20
 
 STREAK_CURRENT_RUN = 4       # days back from today, inclusive
 STREAK_PAST_RUN = (20, 26)   # inclusive range of days back
+
+# Weight entries at irregular intervals, (days_ago, kg) — deliberately not
+# daily, so the weekly digest's "vs. a week ago" lookup has to walk back to the
+# last entry at or before the cutoff rather than finding an exact 7-day match.
+WEIGHT_LOG_KG = [(56, 64.8), (42, 64.1), (28, 63.6), (21, 63.4),
+                 (9, 62.7), (2, 62.2)]
 
 WATER_GOAL_ML = 2000
 # Trailing daily totals (ml), oldest first — deliberately uneven, including a
@@ -264,6 +271,30 @@ def _seed_streak_runs(db, user: User) -> None:
           f"{STREAK_PAST_RUN[1] - STREAK_PAST_RUN[0] + 1}d)")
 
 
+def _seed_weight(db, user: User) -> None:
+    existing_dates = {
+        d
+        for (d,) in db.execute(
+            select(WeightLog.log_date).where(
+                WeightLog.user_id == user.id, WeightLog.deleted_at.is_(None)
+            )
+        ).all()
+    }
+
+    today = date.today()
+    added = 0
+    for days_ago, kg in WEIGHT_LOG_KG:
+        log_date = today - timedelta(days=days_ago)
+        if log_date in existing_dates:
+            continue
+        db.add(WeightLog(user_id=user.id, log_date=log_date, weight_kg=kg))
+        added += 1
+
+    if added:
+        db.flush()
+    print(f"  seeded {added} weight entries for {user.username}")
+
+
 def _seed_water(db, user: User) -> None:
     existing = db.scalar(
         select(func.count()).select_from(WaterLog).where(WaterLog.user_id == user.id)
@@ -383,6 +414,8 @@ def main() -> None:
         # activity to give kudos to.
         _seed_workouts(db, users["admin"], share_to_feed=False)
         _seed_workouts(db, users["demo"], share_to_feed=True)
+
+        _seed_weight(db, users["admin"])
 
         _seed_streak_runs(db, users["admin"])
 

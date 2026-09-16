@@ -9,6 +9,7 @@ import { WeightTrendChart } from '@/components/dashboard/WeightTrendChart'
 import { WorkoutFrequencyChart } from '@/components/dashboard/WorkoutFrequencyChart'
 import { CalorieChart } from '@/components/dashboard/CalorieChart'
 import { WaterWidget } from '@/components/dashboard/WaterWidget'
+import { WeeklyDigestCard } from '@/components/dashboard/WeeklyDigestCard'
 import { useWorkoutStreak } from '@/hooks/useWorkouts'
 import {
   useCaloriesChart,
@@ -120,6 +121,9 @@ export function DashboardView() {
           isLoading={streakLoading}
         />
       </div>
+
+      {/* Weekly digest */}
+      <WeeklyDigestCard />
 
       {/* Active goal */}
       <GoalCard />

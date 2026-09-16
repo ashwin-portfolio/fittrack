@@ -4,6 +4,7 @@ export const queryKeys = {
   },
   dashboard: {
     summary: () => ['dashboard', 'summary'] as const,
+    weeklySummary: () => ['dashboard', 'weekly-summary'] as const,
     charts: (type: string) => ['dashboard', 'charts', type] as const,
   },
   exercises: {

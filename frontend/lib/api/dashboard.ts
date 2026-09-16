@@ -2,6 +2,7 @@ import { apiClient } from '@/lib/api/client'
 import type {
   CaloriesChartData,
   DashboardSummary,
+  WeeklyDigest,
   WeightChartData,
   WorkoutsChartData,
 } from '@/types/dashboard'
@@ -9,6 +10,11 @@ import type {
 export const dashboardApi = {
   getSummary: async (): Promise<DashboardSummary> => {
     const res = await apiClient.get<DashboardSummary>('/dashboard/summary')
+    return res.data
+  },
+
+  getWeeklySummary: async (): Promise<WeeklyDigest> => {
+    const res = await apiClient.get<WeeklyDigest>('/dashboard/weekly-summary')
     return res.data
   },
 
