@@ -1,9 +1,10 @@
 'use client'
 
 import { useFieldArray, useFormContext } from 'react-hook-form'
-import { Plus, Trash2, X } from 'lucide-react'
+import { Plus, Trash2, Trophy, X } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
+import { usePersonalRecords } from '@/hooks/useWorkouts'
 import { MUSCLE_GROUP_LABELS } from '@/lib/constants/workout'
 import { cn } from '@/lib/utils/cn'
 import type { WorkoutFormValues } from '@/lib/validators/workout'
@@ -11,6 +12,7 @@ import type { MuscleGroup } from '@/types/workout'
 
 interface ExerciseBlockProps {
   exerciseIndex: number
+  exerciseId: string
   exerciseName: string
   muscleGroup: MuscleGroup
   onRemove: () => void
@@ -18,6 +20,7 @@ interface ExerciseBlockProps {
 
 export function ExerciseBlock({
   exerciseIndex,
+  exerciseId,
   exerciseName,
   muscleGroup,
   onRemove,
@@ -44,6 +47,9 @@ export function ExerciseBlock({
     })
   }
 
+  const { data: prData } = usePersonalRecords()
+  const personalRecord = prData?.records.find((pr) => pr.exercise_id === exerciseId)
+
   const exerciseErrors = errors.exercises?.[exerciseIndex]
 
   return (
@@ -52,9 +58,17 @@ export function ExerciseBlock({
       <div className="flex items-center justify-between gap-2 px-4 py-3 bg-muted/30">
         <div className="min-w-0">
           <p className="font-semibold text-sm truncate">{exerciseName}</p>
-          <p className="text-xs text-muted-foreground">
-            {MUSCLE_GROUP_LABELS[muscleGroup]}
-          </p>
+          <div className="flex items-center gap-2">
+            <p className="text-xs text-muted-foreground">
+              {MUSCLE_GROUP_LABELS[muscleGroup]}
+            </p>
+            {personalRecord && (
+              <span className="flex items-center gap-1 text-xs font-medium text-amber-600 dark:text-amber-500 tabular-nums">
+                <Trophy className="h-3 w-3" />
+                PR {personalRecord.max_weight_kg} kg
+              </span>
+            )}
+          </div>
         </div>
         <button
           type="button"

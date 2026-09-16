@@ -38,6 +38,7 @@ export function useCreateWorkout() {
     mutationFn: (data: WorkoutCreateRequest) => workoutsApi.create(data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['workouts', 'list'] })
+      queryClient.invalidateQueries({ queryKey: ['workouts', 'streak'] })
       queryClient.invalidateQueries({ queryKey: queryKeys.dashboard.summary() })
     },
     onError: (error) => toast.error(getApiErrorMessage(error)),
@@ -50,6 +51,7 @@ export function useUpdateWorkout(id: string) {
     mutationFn: (data: WorkoutCreateRequest) => workoutsApi.update(id, data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['workouts', 'list'] })
+      queryClient.invalidateQueries({ queryKey: ['workouts', 'streak'] })
       queryClient.invalidateQueries({ queryKey: queryKeys.workouts.detail(id) })
       queryClient.invalidateQueries({ queryKey: queryKeys.dashboard.summary() })
     },
@@ -63,6 +65,7 @@ export function useDeleteWorkout() {
     mutationFn: (id: string) => workoutsApi.delete(id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['workouts', 'list'] })
+      queryClient.invalidateQueries({ queryKey: ['workouts', 'streak'] })
       queryClient.invalidateQueries({ queryKey: queryKeys.dashboard.summary() })
       toast.success('Workout deleted.')
     },
@@ -76,6 +79,7 @@ export function useDuplicateWorkout() {
     mutationFn: (id: string) => workoutsApi.duplicate(id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['workouts', 'list'] })
+      queryClient.invalidateQueries({ queryKey: ['workouts', 'streak'] })
       queryClient.invalidateQueries({ queryKey: queryKeys.dashboard.summary() })
     },
     onError: (error) => toast.error(getApiErrorMessage(error)),
@@ -99,10 +103,19 @@ export function useExerciseHistory(exerciseId: string | null) {
   })
 }
 
-export function usePersonalRecords() {
+export function useWorkoutStreak() {
+  return useQuery({
+    queryKey: ['workouts', 'streak'],
+    queryFn: () => workoutsApi.getStreak(),
+    staleTime: 5 * 60 * 1000,
+  })
+}
+
+export function usePersonalRecords(options?: { enabled?: boolean }) {
   return useQuery({
     queryKey: ['workouts', 'personal-records'],
     queryFn: () => workoutsApi.getPersonalRecords(),
     staleTime: 5 * 60 * 1000,
+    enabled: options?.enabled ?? true,
   })
 }

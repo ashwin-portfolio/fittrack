@@ -13,7 +13,25 @@ export interface DashboardSummary {
   workouts_this_week: number
   calories_today: number
   protein_today_g: number
+  /** null when no weight is on record, or no session this week has a duration. */
+  calories_burned_this_week: number | null
   recent_activities: DashboardActivity[]
+}
+
+export interface WeeklyDigest {
+  week_start: string          // YYYY-MM-DD
+  week_end: string
+  workouts_completed: number
+  /** Only set when the active goal is a workout_frequency goal. */
+  workout_goal: number | null
+  calories_consumed: number
+  /** null when nothing this week is estimable. */
+  calories_burned: number | null
+  /** null whenever calories_burned is null — "net" needs both sides. */
+  net_calories: number | null
+  weight_delta_kg: number | null
+  workout_streak: number
+  nutrition_streak: number
 }
 
 export interface WeightDataPoint {

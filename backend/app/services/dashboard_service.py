@@ -10,6 +10,11 @@ from app.models.nutrition import NutritionEntry
 from app.models.user import User
 from app.models.weight import WeightLog
 from app.models.workout import WorkoutExercise, WorkoutSession
+from app.services.workout_service import workout_service
+from app.repositories.goal_repository import goal_repo
+from app.repositories.workout_repository import workout_repo
+from app.repositories.nutrition_repository import nutrition_repo
+from app.repositories.weight_repository import weight_repo
 from app.schemas.dashboard import (
     ActivityItem,
     CaloriesChartResponse,
@@ -17,12 +22,68 @@ from app.schemas.dashboard import (
     DashboardSummaryResponse,
     WeightChartResponse,
     WeightDataPoint,
+    WeeklyDigestResponse,
     WorkoutWeekPoint,
     WorkoutsChartResponse,
 )
+from app.services.nutrition_service import nutrition_service
 
 
 class DashboardService:
+    def weekly_digest(self, db: Session, user: User) -> WeeklyDigestResponse:
+        today = date.today()
+        week_start = today - timedelta(days=today.weekday())   # Monday
+        week_end = week_start + timedelta(days=6)              # Sunday
+
+        # ── Workouts vs. goal ────────────────────────────────────────────────
+        workouts_completed = workout_repo.count_this_week(db, user.id)
+        goal = goal_repo.get_active(db, user.id)
+        workout_goal = (
+            goal.weekly_workout_target
+            if goal and goal.goal_type == "workout_frequency"
+            else None
+        )
+
+        # ── Calories in and out ──────────────────────────────────────────────
+        consumed_by_date = nutrition_repo.calories_by_date_range(
+            db, user.id, week_start, week_end
+        )
+        calories_consumed = round(sum(consumed_by_date.values()), 1)
+        calories_burned = workout_service.calories_burned_this_week(db, user)
+        net_calories = (
+            round(calories_consumed - calories_burned, 1)
+            if calories_burned is not None
+            else None
+        )
+
+        # ── Weight delta vs. a week ago ──────────────────────────────────────
+        weight_delta_kg = None
+        latest = weight_repo.get_latest(db, user.id)
+        reference = weight_repo.get_latest_on_or_before(
+            db, user.id, today - timedelta(days=7)
+        )
+        # A single entry is its own reference and would always report 0.0, which
+        # reads as "no change" rather than "nothing to compare against".
+        if latest and reference and latest.id != reference.id:
+            weight_delta_kg = round(latest.weight_kg - reference.weight_kg, 2)
+
+        # ── Active streaks ───────────────────────────────────────────────────
+        workout_streak = workout_service.streak(db, user).current_streak
+        nutrition_streak = nutrition_service.streak(db, user).current_streak
+
+        return WeeklyDigestResponse(
+            week_start=week_start,
+            week_end=week_end,
+            workouts_completed=workouts_completed,
+            workout_goal=workout_goal,
+            calories_consumed=calories_consumed,
+            calories_burned=calories_burned,
+            net_calories=net_calories,
+            weight_delta_kg=weight_delta_kg,
+            workout_streak=workout_streak,
+            nutrition_streak=nutrition_streak,
+        )
+
     def summary(self, db: Session, user: User) -> DashboardSummaryResponse:
         today = date.today()
         week_start = today - timedelta(days=today.weekday())  # Monday of current week
@@ -85,6 +146,7 @@ class DashboardService:
             workouts_this_week=workouts_this_week,
             calories_today=nutrition_row.calories,
             protein_today_g=nutrition_row.protein,
+            calories_burned_this_week=workout_service.calories_burned_this_week(db, user),
             recent_activities=self._recent_activities(db, user.id),
         )
 

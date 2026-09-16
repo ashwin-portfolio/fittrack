@@ -4,6 +4,7 @@ export const queryKeys = {
   },
   dashboard: {
     summary: () => ['dashboard', 'summary'] as const,
+    weeklySummary: () => ['dashboard', 'weekly-summary'] as const,
     charts: (type: string) => ['dashboard', 'charts', type] as const,
   },
   exercises: {
@@ -24,10 +25,15 @@ export const queryKeys = {
     history: (days?: number) => ['weight', 'history', days] as const,
   },
   water: {
+    // Prefix key — matches every water query (summary, history, goal).
+    all: () => ['water'] as const,
     dailySummary: (date: string) => ['water', 'daily-summary', date] as const,
+    history: (days: number) => ['water', 'history', days] as const,
     goal: () => ['water', 'goal'] as const,
   },
   feed: {
+    // Prefix key — matches every feed query regardless of variant or filters.
+    all: () => ['feed'] as const,
     global: (filters?: object) => ['feed', 'global', filters] as const,
     following: (filters?: object) => ['feed', 'following', filters] as const,
   },

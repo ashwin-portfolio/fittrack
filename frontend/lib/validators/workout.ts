@@ -23,6 +23,12 @@ const exerciseSchema = z.object({
 export const workoutFormSchema = z.object({
   session_date: z.string().min(1, 'Date is required'),
   name: z.string().max(100, 'Max 100 characters').optional(),
+  // Optional — drives the calories-burned estimate. Empty string coerces to
+  // undefined so an untouched field does not fail the number check.
+  duration_minutes: z
+    .union([z.coerce.number().int().min(1, 'Min 1').max(720, 'Max 720'), z.literal('')])
+    .optional()
+    .transform((v) => (v === '' || v === undefined ? undefined : Number(v))),
   notes: z.string().optional(),
   exercises: z
     .array(exerciseSchema)

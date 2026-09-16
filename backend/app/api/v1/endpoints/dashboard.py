@@ -6,6 +6,7 @@ from app.models.user import User
 from app.schemas.dashboard import (
     CaloriesChartResponse,
     DashboardSummaryResponse,
+    WeeklyDigestResponse,
     WeightChartResponse,
     WorkoutsChartResponse,
 )
@@ -20,6 +21,14 @@ def get_summary(
     current_user: User = Depends(get_current_active_user),
 ):
     return dashboard_service.summary(db, current_user)
+
+
+@router.get("/weekly-summary", response_model=WeeklyDigestResponse)
+def get_weekly_summary(
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_active_user),
+):
+    return dashboard_service.weekly_digest(db, current_user)
 
 
 @router.get("/charts/weight", response_model=WeightChartResponse)

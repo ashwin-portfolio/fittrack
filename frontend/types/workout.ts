@@ -51,6 +51,9 @@ export interface WorkoutResponse {
   session_date: string       // YYYY-MM-DD
   name: string | null
   notes: string | null
+  duration_minutes: number | null
+  /** null when the session has no duration, or no body weight is on record. */
+  calories_burned: number | null
   is_shared: boolean
   exercises: WorkoutExercise[]
   created_at: string
@@ -65,6 +68,8 @@ export interface WorkoutSummary {
   exercise_count: number
   total_sets: number
   created_at: string
+  duration_minutes: number | null
+  calories_burned: number | null
 }
 
 export interface WorkoutListResponse {
@@ -89,6 +94,7 @@ export interface WorkoutCreateRequest {
   notes?: string | null
   is_shared?: boolean
   exercises: WorkoutExerciseCreate[]
+  duration_minutes?: number | null
 }
 
 export interface LoggedExercise {
@@ -117,6 +123,11 @@ export interface ExerciseHistoryResponse {
   muscle_group: string
   entries: ExerciseHistoryEntry[]
   total_sessions: number
+}
+
+export interface WorkoutStreak {
+  current_streak: number
+  longest_streak: number
 }
 
 export interface PersonalRecord {

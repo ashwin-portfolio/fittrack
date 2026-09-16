@@ -11,12 +11,12 @@ interface KudosButtonProps {
 }
 
 export function KudosButton({ feedItemId, kudosCount, hasKudos }: KudosButtonProps) {
-  const { mutate, isPending } = useToggleKudos()
+  const { mutate } = useToggleKudos()
 
+  // No pending-disable: the cache updates optimistically, so the button stays live.
   return (
     <button
       onClick={() => mutate({ feedItemId, hasKudos })}
-      disabled={isPending}
       className={cn(
         'flex items-center gap-1.5 rounded-md px-2.5 py-1.5 text-sm font-medium transition-colors',
         hasKudos

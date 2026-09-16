@@ -6,6 +6,7 @@ import type {
   WorkoutCreateRequest,
   WorkoutListResponse,
   WorkoutResponse,
+  WorkoutStreak,
 } from '@/types/workout'
 
 export const workoutsApi = {
@@ -35,6 +36,11 @@ export const workoutsApi = {
 
   duplicate: async (id: string): Promise<WorkoutResponse> => {
     const res = await apiClient.post<WorkoutResponse>(`/workouts/${id}/duplicate`)
+    return res.data
+  },
+
+  getStreak: async (): Promise<WorkoutStreak> => {
+    const res = await apiClient.get<WorkoutStreak>('/workouts/streak')
     return res.data
   },
 

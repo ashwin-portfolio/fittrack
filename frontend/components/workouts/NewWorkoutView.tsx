@@ -115,7 +115,7 @@ export function NewWorkoutView() {
         </div>
 
         {/* Date + Name */}
-        <div className="grid gap-3 sm:grid-cols-2">
+        <div className="grid gap-3 sm:grid-cols-3">
           <div className="space-y-1.5">
             <label className="text-sm font-medium" htmlFor="session_date">
               Date
@@ -126,6 +126,24 @@ export function NewWorkoutView() {
               {...form.register('session_date')}
               className={form.formState.errors.session_date ? 'border-destructive' : ''}
             />
+          </div>
+          <div className="space-y-1.5">
+            <label className="text-sm font-medium" htmlFor="duration_minutes">
+              Duration <span className="text-muted-foreground font-normal">(optional, min)</span>
+            </label>
+            <Input
+              id="duration_minutes"
+              type="number"
+              inputMode="numeric"
+              min={1}
+              max={720}
+              placeholder="e.g. 45"
+              {...form.register('duration_minutes')}
+              className={form.formState.errors.duration_minutes ? 'border-destructive' : ''}
+            />
+            <p className="text-xs text-muted-foreground">
+              Used to estimate calories burned.
+            </p>
           </div>
           <div className="space-y-1.5">
             <label className="text-sm font-medium" htmlFor="workout_name">
@@ -154,6 +172,7 @@ export function NewWorkoutView() {
             <ExerciseBlock
               key={field.id}
               exerciseIndex={index}
+              exerciseId={field.exercise_id}
               exerciseName={field.exercise_name}
               muscleGroup={field.muscle_group as Parameters<typeof ExerciseBlock>[0]['muscleGroup']}
               onRemove={() => remove(index)}

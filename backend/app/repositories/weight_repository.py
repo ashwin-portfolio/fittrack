@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import uuid
-from datetime import date, datetime, timedelta, timezone
+from datetime import date, datetime, timezone
 
 from sqlalchemy import select
 from sqlalchemy.orm import Session
@@ -77,6 +77,37 @@ class WeightRepository:
                 )
                 .order_by(WeightLog.log_date.asc())
             ).all()
+        )
+
+    def get_latest(self, db: Session, user_id: uuid.UUID) -> WeightLog | None:
+        """Most recent active entry — the body weight used for MET estimates."""
+        return db.scalar(
+            select(WeightLog)
+            .where(WeightLog.user_id == user_id, WeightLog.deleted_at.is_(None))
+            .order_by(WeightLog.log_date.desc(), WeightLog.created_at.desc())
+            .limit(1)
+        )
+
+    def get_latest_on_or_before(
+        self, db: Session, user_id: uuid.UUID, cutoff: date
+    ) -> WeightLog | None:
+        """
+        Most recent active entry no later than `cutoff`.
+
+        Used as the "a week ago" reference. Weight is not logged daily, so the
+        comparison walks back to the last entry at or before the cutoff rather
+        than requiring one exactly 7 days old — otherwise the delta would be
+        null for anyone who does not weigh in on a fixed schedule.
+        """
+        return db.scalar(
+            select(WeightLog)
+            .where(
+                WeightLog.user_id == user_id,
+                WeightLog.log_date <= cutoff,
+                WeightLog.deleted_at.is_(None),
+            )
+            .order_by(WeightLog.log_date.desc(), WeightLog.created_at.desc())
+            .limit(1)
         )
 
     def get_by_id(self, db: Session, entry_id: uuid.UUID) -> WeightLog | None:

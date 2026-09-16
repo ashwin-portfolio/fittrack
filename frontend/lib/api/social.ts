@@ -53,12 +53,12 @@ export const socialApi = {
     return res.data
   },
 
-  getFollowers: async (username: string, params: { skip?: number; limit?: number } = {}): Promise<FollowListResponse> => {
+  getFollowers: async (username: string, params: { cursor?: string; limit?: number } = {}): Promise<FollowListResponse> => {
     const res = await apiClient.get<FollowListResponse>(`/users/${username}/followers`, { params })
     return res.data
   },
 
-  getFollowingList: async (username: string, params: { skip?: number; limit?: number } = {}): Promise<FollowListResponse> => {
+  getFollowingList: async (username: string, params: { cursor?: string; limit?: number } = {}): Promise<FollowListResponse> => {
     const res = await apiClient.get<FollowListResponse>(`/users/${username}/following`, { params })
     return res.data
   },

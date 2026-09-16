@@ -5,10 +5,13 @@ import uuid
 from fastapi import HTTPException, status
 from sqlalchemy.orm import Session
 
+from app.core.met import calories_burned, session_met
+from app.core.streaks import compute_streaks
 from app.models.user import User
 from app.models.workout import WorkoutSession
 from app.repositories.exercise_repository import exercise_repo
 from app.repositories.feed_repository import feed_repo
+from app.repositories.weight_repository import weight_repo
 from app.repositories.workout_repository import workout_repo
 from app.schemas.workout import (
     ExerciseHistoryEntry,
@@ -22,11 +25,26 @@ from app.schemas.workout import (
     WorkoutExerciseResponse,
     WorkoutListResponse,
     WorkoutResponse,
+    WorkoutStreakResponse,
     WorkoutSummary,
 )
 
 
-def _build_response(session: WorkoutSession) -> WorkoutResponse:
+def _session_calories(session: WorkoutSession, weight_kg: float | None) -> float | None:
+    """Blended MET across the session's exercises, weighted by set count."""
+    sets_by_group: dict[str, int] = {}
+    for we in session.workout_exercises:
+        group = we.exercise.muscle_group
+        sets_by_group[group] = sets_by_group.get(group, 0) + len(we.sets)
+
+    return calories_burned(
+        session_met(sets_by_group), weight_kg, session.duration_minutes
+    )
+
+
+def _build_response(
+    session: WorkoutSession, weight_kg: float | None = None
+) -> WorkoutResponse:
     exercises = [
         WorkoutExerciseResponse(
             id=we.id,
@@ -51,6 +69,8 @@ def _build_response(session: WorkoutSession) -> WorkoutResponse:
         session_date=session.session_date,
         name=session.name,
         notes=session.notes,
+        duration_minutes=session.duration_minutes,
+        calories_burned=_session_calories(session, weight_kg),
         is_shared=session.is_shared,
         exercises=exercises,
         created_at=session.created_at,
@@ -86,6 +106,7 @@ class WorkoutService:
             name=body.name,
             notes=body.notes,
             is_shared=body.is_shared,
+            duration_minutes=body.duration_minutes,
         )
 
         for idx, item in enumerate(body.exercises):
@@ -116,7 +137,7 @@ class WorkoutService:
                 workout_session_id=session.id,
             )
 
-        return _build_response(session)
+        return _build_response(session, self._current_weight_kg(db, current_user))
 
     def list_workouts(
         self,
@@ -129,6 +150,7 @@ class WorkoutService:
         sessions, total = workout_repo.list_for_user(
             db, current_user.id, limit=limit, offset=offset
         )
+        weight_kg = self._current_weight_kg(db, current_user)
         summaries = [
             WorkoutSummary(
                 id=s.id,
@@ -137,6 +159,8 @@ class WorkoutService:
                 is_shared=s.is_shared,
                 exercise_count=len(s.workout_exercises),
                 total_sets=sum(len(we.sets) for we in s.workout_exercises),
+                duration_minutes=s.duration_minutes,
+                calories_burned=_session_calories(s, weight_kg),
                 created_at=s.created_at,
             )
             for s in sessions
@@ -148,7 +172,7 @@ class WorkoutService:
     ) -> WorkoutResponse:
         session = workout_repo.get_by_id(db, workout_id)
         _check_ownership(session, current_user.id)
-        return _build_response(session)  # type: ignore[arg-type]
+        return _build_response(session, self._current_weight_kg(db, current_user))  # type: ignore[arg-type]
 
     def update_workout(
         self, db: Session, current_user: User, workout_id: uuid.UUID, body: WorkoutCreateRequest
@@ -170,6 +194,7 @@ class WorkoutService:
         session.session_date = body.session_date  # type: ignore[union-attr]
         session.name = body.name  # type: ignore[union-attr]
         session.notes = body.notes  # type: ignore[union-attr]
+        session.duration_minutes = body.duration_minutes  # type: ignore[union-attr]
         session.is_shared = body.is_shared  # type: ignore[union-attr]
 
         # Replace all exercises and sets
@@ -204,7 +229,7 @@ class WorkoutService:
         elif not body.is_shared and old_shared:
             feed_repo.soft_delete_by_workout(db, session.id)  # type: ignore[union-attr]
 
-        return _build_response(session)  # type: ignore[arg-type]
+        return _build_response(session, self._current_weight_kg(db, current_user))  # type: ignore[arg-type]
 
     def delete_workout(
         self, db: Session, current_user: User, workout_id: uuid.UUID
@@ -271,6 +296,8 @@ class WorkoutService:
             name=original.name,  # type: ignore[union-attr]
             notes=original.notes,  # type: ignore[union-attr]
             is_shared=False,
+            # A repeat of the same session takes about the same time.
+            duration_minutes=original.duration_minutes,  # type: ignore[union-attr]
         )
 
         for we in original.workout_exercises:  # type: ignore[union-attr]
@@ -294,7 +321,37 @@ class WorkoutService:
         for we in new_session.workout_exercises:
             db.refresh(we, ["exercise", "sets"])
 
-        return _build_response(new_session)
+        return _build_response(new_session, self._current_weight_kg(db, current_user))
+
+    def _current_weight_kg(self, db: Session, current_user: User) -> float | None:
+        latest = weight_repo.get_latest(db, current_user.id)
+        return latest.weight_kg if latest else None
+
+    def calories_burned_this_week(self, db: Session, current_user: User) -> float | None:
+        """
+        Summed estimate for the current week, or None if nothing is estimable.
+
+        Sessions without a duration contribute nothing rather than zero — a
+        zero would read as "you burned nothing", which is a different claim
+        from "this was never recorded".
+        """
+        weight_kg = self._current_weight_kg(db, current_user)
+        if weight_kg is None:
+            return None
+
+        totals = [
+            c
+            for s in workout_repo.list_for_week(db, current_user.id)
+            if (c := _session_calories(s, weight_kg)) is not None
+        ]
+        return round(sum(totals), 1) if totals else None
+
+    def streak(self, db: Session, current_user: User) -> WorkoutStreakResponse:
+        logged_dates = workout_repo.list_workout_dates(db, current_user.id)
+        current_streak, longest_streak = compute_streaks(logged_dates)
+        return WorkoutStreakResponse(
+            current_streak=current_streak, longest_streak=longest_streak
+        )
 
     def personal_records(self, db: Session, current_user: User) -> PersonalRecordsResponse:
         rows = workout_repo.get_personal_records(db, current_user.id)

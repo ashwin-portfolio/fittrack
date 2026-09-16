@@ -14,6 +14,14 @@ export function useDashboardSummary() {
   })
 }
 
+export function useWeeklyDigest() {
+  return useQuery({
+    queryKey: queryKeys.dashboard.weeklySummary(),
+    queryFn: dashboardApi.getWeeklySummary,
+    staleTime: STALE_5M,
+  })
+}
+
 export function useWeightChart(days = 30) {
   return useQuery({
     queryKey: [...queryKeys.dashboard.charts('weight'), days],

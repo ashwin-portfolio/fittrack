@@ -2,13 +2,23 @@ from __future__ import annotations
 
 import uuid
 from datetime import datetime, timezone
+from typing import NamedTuple
 
-from sqlalchemy import delete, func, select
+from sqlalchemy import func, select, tuple_
 from sqlalchemy.orm import Session, selectinload
 
 from app.models.profile import Profile
 from app.models.social import Comment, Follow, Kudos
 from app.models.user import User
+
+
+class FollowListRow(NamedTuple):
+    """A follow-list entry plus the sort key needed to build the next cursor."""
+
+    user: User
+    profile: Profile
+    follow_created_at: datetime
+    follow_id: uuid.UUID
 
 
 class SocialRepository:
@@ -210,39 +220,90 @@ class SocialRepository:
         ).all()
         return {r.following_id for r in rows}
 
+    def _follow_list(
+        self,
+        db: Session,
+        *,
+        listed_side,        # Follow column holding the user being listed
+        owner_side,         # Follow column holding whose list this is
+        user_id: uuid.UUID,
+        cursor: tuple[datetime, uuid.UUID] | None,
+        limit: int,
+    ) -> tuple[list[FollowListRow], bool]:
+        """
+        One page of a follow list, newest first, keyset-paginated.
+
+        Ordered by (created_at, id) descending. The id breaks ties because
+        follows created in one transaction share a created_at to the
+        microsecond — ordering on the timestamp alone would let rows shift
+        between pages.
+        """
+        stmt = (
+            select(
+                User,
+                Profile,
+                Follow.created_at.label("follow_created_at"),
+                Follow.id.label("follow_id"),
+            )
+            .join(Follow, listed_side == User.id)
+            .join(Profile, Profile.user_id == User.id)
+            .where(owner_side == user_id)
+        )
+
+        if cursor is not None:
+            # Row-value comparison: strictly past the last row of the previous
+            # page. Unlike OFFSET, this does not shift when rows are added or
+            # removed while the reader is paging.
+            stmt = stmt.where(tuple_(Follow.created_at, Follow.id) < cursor)
+
+        # Fetch one extra to learn whether a further page exists, which avoids
+        # a COUNT on every page.
+        rows = db.execute(
+            stmt.order_by(Follow.created_at.desc(), Follow.id.desc()).limit(limit + 1)
+        ).all()
+
+        has_more = len(rows) > limit
+        return (
+            [
+                FollowListRow(r.User, r.Profile, r.follow_created_at, r.follow_id)
+                for r in rows[:limit]
+            ],
+            has_more,
+        )
+
     def get_followers(
         self,
         db: Session,
         user_id: uuid.UUID,
-        skip: int = 0,
+        *,
+        cursor: tuple[datetime, uuid.UUID] | None = None,
         limit: int = 20,
-    ) -> tuple[list[tuple[User, Profile]], int]:
-        base = (
-            select(User, Profile)
-            .join(Follow, Follow.follower_id == User.id)
-            .join(Profile, Profile.user_id == User.id)
-            .where(Follow.following_id == user_id)
+    ) -> tuple[list[FollowListRow], bool]:
+        return self._follow_list(
+            db,
+            listed_side=Follow.follower_id,
+            owner_side=Follow.following_id,
+            user_id=user_id,
+            cursor=cursor,
+            limit=limit,
         )
-        total = db.scalar(select(func.count()).select_from(base.subquery())) or 0
-        rows = db.execute(base.order_by(Follow.created_at.desc()).limit(limit).offset(skip)).all()
-        return [(r.User, r.Profile) for r in rows], total
 
     def get_following(
         self,
         db: Session,
         user_id: uuid.UUID,
-        skip: int = 0,
+        *,
+        cursor: tuple[datetime, uuid.UUID] | None = None,
         limit: int = 20,
-    ) -> tuple[list[tuple[User, Profile]], int]:
-        base = (
-            select(User, Profile)
-            .join(Follow, Follow.following_id == User.id)
-            .join(Profile, Profile.user_id == User.id)
-            .where(Follow.follower_id == user_id)
+    ) -> tuple[list[FollowListRow], bool]:
+        return self._follow_list(
+            db,
+            listed_side=Follow.following_id,
+            owner_side=Follow.follower_id,
+            user_id=user_id,
+            cursor=cursor,
+            limit=limit,
         )
-        total = db.scalar(select(func.count()).select_from(base.subquery())) or 0
-        rows = db.execute(base.order_by(Follow.created_at.desc()).limit(limit).offset(skip)).all()
-        return [(r.User, r.Profile) for r in rows], total
 
 
 social_repo = SocialRepository()

@@ -142,6 +142,9 @@ class FollowerListItem(BaseModel):
 
 class FollowerListResponse(BaseModel):
     items: list[FollowerListItem]
-    total: int
-    skip: int
-    limit: int
+    # Pass back as ?cursor= to get the next page. None means this is the last.
+    next_cursor: str | None = None
+    has_more: bool = False
+    # Only populated on the first page — later pages would pay for a COUNT the
+    # client already has from the first response.
+    total: int | None = None

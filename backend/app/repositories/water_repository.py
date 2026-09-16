@@ -29,6 +29,24 @@ class WaterRepository:
             ).all()
         )
 
+    def totals_by_date_range(
+        self, db: Session, user_id: uuid.UUID, start_date: date, end_date: date
+    ) -> dict[date, int]:
+        """Summed ml per day. Days with no logs are absent, not zero."""
+        rows = db.execute(
+            select(
+                WaterLog.log_date,
+                func.coalesce(func.sum(WaterLog.amount_ml), 0).label("total"),
+            )
+            .where(
+                WaterLog.user_id == user_id,
+                WaterLog.log_date >= start_date,
+                WaterLog.log_date <= end_date,
+            )
+            .group_by(WaterLog.log_date)
+        ).all()
+        return {r.log_date: int(r.total) for r in rows}
+
     def get_by_id(self, db: Session, entry_id: uuid.UUID) -> WaterLog | None:
         return db.scalar(select(WaterLog).where(WaterLog.id == entry_id))
 

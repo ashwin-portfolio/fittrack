@@ -18,6 +18,14 @@ export function useWaterDailySummary(date: string) {
   })
 }
 
+export function useWaterHistory(days: number) {
+  return useQuery({
+    queryKey: queryKeys.water.history(days),
+    queryFn: () => waterApi.getHistory(days),
+    staleTime: STALE_2M,
+  })
+}
+
 export function useWaterGoal() {
   return useQuery({
     queryKey: queryKeys.water.goal(),
@@ -31,7 +39,7 @@ export function useLogWater(date: string) {
   return useMutation({
     mutationFn: (data: LogWaterRequest) => waterApi.log(data),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.water.dailySummary(date) })
+      queryClient.invalidateQueries({ queryKey: queryKeys.water.all() })
       queryClient.invalidateQueries({ queryKey: queryKeys.dashboard.summary() })
     },
     onError: (error) => toast.error(getApiErrorMessage(error)),
@@ -43,7 +51,7 @@ export function useDeleteWaterEntry(date: string) {
   return useMutation({
     mutationFn: (id: string) => waterApi.delete(id),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.water.dailySummary(date) })
+      queryClient.invalidateQueries({ queryKey: queryKeys.water.all() })
       queryClient.invalidateQueries({ queryKey: queryKeys.dashboard.summary() })
       toast.success('Entry deleted')
     },
@@ -56,8 +64,7 @@ export function useSetWaterGoal() {
   return useMutation({
     mutationFn: (daily_target_ml: number) => waterApi.setGoal(daily_target_ml),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.water.goal() })
-      queryClient.invalidateQueries({ queryKey: ['water', 'daily-summary'] })
+      queryClient.invalidateQueries({ queryKey: queryKeys.water.all() })
       queryClient.invalidateQueries({ queryKey: queryKeys.dashboard.summary() })
       toast.success('Water goal saved')
     },
